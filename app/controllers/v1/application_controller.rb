@@ -1,4 +1,2 @@
-module V1
-  class ApplicationController < ActionController::API
-  end
+class V1::ApplicationController < ActionController::API
 end
