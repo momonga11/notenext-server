@@ -31,3 +31,6 @@
 
 # Ignore rspec config.
 .rspec
+
+# VSCode関連
+/.vscode

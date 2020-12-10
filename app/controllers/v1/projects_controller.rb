@@ -1,62 +1,70 @@
-class V1::ProjectsController < ApplicationController
+class V1::ProjectsController < V1::ApplicationController
+  before_action :authenticate_user!
   before_action :set_project, only: %i[show update destroy]
 
   # GET /projects
-  # def index
-  #   @projects = Project.all
+  def index
+    @projects = current_user.projects.all
 
-  #   render json: @projects
-  # end
+    render json: @projects
+  end
 
   # GET /projects/1
   def show
-    render json: @project
+    # 特定のパラメータが渡った時、初期描画用にプロジェクト、フォルダー、ユーザーの情報を抜粋して渡す。
+    if params.key?(:header_info) && params[:header_info]
+      render json: @project, serializer: ProjectHeaderSerializer, scope: current_user
+    else
+      render json: @project
+    end
   end
 
   # POST /projects
   def create
-    # TODO: 認証されていない場合はエラー(401)
-    # 1ユーザー1プロジェクトのため、認証ユーザーがオーナーのプロジェクトが1以上の場合はエラー(403)
-
-    @project = Project.new(project_params)
+    # 現在のユーザーとプロジェクトを紐付けて作成する
+    project_user_params = project_params.merge(users: Array.new(1, current_user))
+    @project = Project.new(project_user_params)
 
     if @project.save
-      render json: @project, status: :created, location: v1_project_url(@project)
+      response_created_request(@project, v1_project_url(@project))
     else
-      render json: @project.errors, status: :unprocessable_entity
+      response_unprocessable_entity(@project)
     end
   end
 
   # PATCH/PUT /projects/1
   def update
-    # TODO: 認証されていない場合はエラー(401)
-    # TODO: 認証ユーザーが所属するプロジェクトでない場合はエラー(403)
-    # TODO: 楽観排他制御
+    if !params.key?(:project) || !params[:project].key?(:lock_version)
+      response_bad_request('必要なパラメーターが存在しないため、処理を実行できません(lock_version)')
+      return
+    end
+
     if @project.update(project_params)
-      render json: @project
+      response_success_request(@project)
     else
-      render json: @project.errors, status: :unprocessable_entity
+      response_unprocessable_entity(@project)
     end
   end
 
   # DELETE /projects/1
   def destroy
-    # TODO: 認証されていない場合はエラー(401)
-    # TODO: 認証ユーザーが所属するプロジェクトでない場合はエラー(403)
-    # TODO: 楽観排他制御
-    @project.destroy
-    # TODO: 成功したのかどうかを返せ。
+    if @project.destroy
+      response_success_request
+    else
+      response_unprocessable_entity(@project)
+    end
   end
 
   private
 
   # Use callbacks to share common setup or constraints between actions.
   def set_project
-    @project = Project.find(params[:id])
+    # @project = Project.find(params[:id])
+    @project = authenticate_project!(params[:id])
   end
 
   # Only allow a trusted parameter "white list" through.
   def project_params
-    params.require(:project).permit(:name, :description)
+    params.require(:project).permit(:name, :description, :lock_version)
   end
 end

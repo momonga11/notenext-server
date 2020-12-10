@@ -1,4 +1,7 @@
-class V1::FoldersController < ApplicationController
+class V1::FoldersController < V1::ApplicationController
+  before_action lambda {
+                  authenticate_project!(params[:id])
+                }, only: %i[show update destroy]
   before_action :set_folder, only: %i[show update destroy]
 
   # GET /folders

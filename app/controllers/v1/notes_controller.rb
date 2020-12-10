@@ -1,4 +1,4 @@
-class V1::NotesController < ApplicationController
+class V1::NotesController < V1::ApplicationController
   before_action :set_note, only: %i[show update destroy]
 
   # GET /notes

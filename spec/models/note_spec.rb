@@ -1,5 +1,9 @@
 require 'rails_helper'
 
 RSpec.describe Note, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  it 'ファクトリで関連するデータを生成する' do
+    note = FactoryBot.build(:note)
+    puts "This note's project is #{note.project.inspect}"
+    puts "This note's folder is #{note.folder.inspect}"
+  end
 end

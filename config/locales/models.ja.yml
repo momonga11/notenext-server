@@ -1,3 +1,4 @@
+---
 ja:
   activerecord:
     models:
@@ -8,9 +9,9 @@ ja:
     attributes:
       user:
         name: ユーザー名
-        email_address: メールアドレス
-        password_digest: パスワード
-        avatar_file_name: 画像ファイル
+        email: メールアドレス
+        password: パスワード
+        avatar: 画像ファイル
       project:
         name: プロジェクト名
       folder:
@@ -19,9 +20,9 @@ ja:
         title: タイトル
         text: 本文
         htmltext: 本文
-    attributes:
-      description: 説明
-      created_at: 作成日時
-      updated_at: 更新日時
-      created_by: 作成者
-      updated_by: 更新者
+  attributes:
+    description: 説明
+    created_at: 作成日時
+    updated_at: 更新日時
+    created_by: 作成者
+    updated_by: 更新者
