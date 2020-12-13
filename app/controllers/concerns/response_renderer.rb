@@ -30,8 +30,8 @@ module ResponseRenderer
   end
 
   # 404 Not Found
-  def response_not_found(class_name = 'page')
-    render status: 404, json: { message: "#{class_name.capitalize} Not Found" }
+  def response_not_found(resource)
+    render status: :not_found, json: { message: "#{resource} は見つかりませんでした。" }
   end
 
   # 409 Conflict

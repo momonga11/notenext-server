@@ -1,12 +1,11 @@
 class V1::FoldersController < V1::ApplicationController
-  before_action lambda {
-                  authenticate_project!(params[:id])
-                }, only: %i[show update destroy]
+  before_action :authenticate_user!
+  before_action :set_project
   before_action :set_folder, only: %i[show update destroy]
 
   # GET /folders
   def index
-    @folders = Folder.all
+    @folders = @project.folders
 
     render json: @folders
   end
@@ -18,27 +17,33 @@ class V1::FoldersController < V1::ApplicationController
 
   # POST /folders
   def create
-    @folder = Folder.new(folder_params)
+    @folder = @project.folders.new(folder_params)
 
     if @folder.save
-      render json: @folder, status: :created, location: v1_folder_url(@folder)
+      response_created_request(@folder, v1_project_url(@folder))
     else
-      render json: @folder.errors, status: :unprocessable_entity
+      response_unprocessable_entity(@folder)
     end
   end
 
   # PATCH/PUT /folders/1
   def update
+    has_lock_version!(params, :folder)
+
     if @folder.update(folder_params)
-      render json: @folder
+      response_success_request(@folder)
     else
-      render json: @folder.errors, status: :unprocessable_entity
+      response_unprocessable_entity(@folder)
     end
   end
 
   # DELETE /folders/1
   def destroy
-    @folder.destroy
+    if @folder.destroy
+      response_success_request
+    else
+      response_unprocessable_entity(@folder)
+    end
   end
 
   private
@@ -50,6 +55,10 @@ class V1::FoldersController < V1::ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def folder_params
-    params.require(:folder).permit(:project_id, :name, :description)
+    params.require(:folder).permit(:name, :description, :lock_version)
+  end
+
+  def set_project
+    @project = authenticate_project!(params[:project_id])
   end
 end

@@ -7,6 +7,7 @@ class V1::ApplicationController < ActionController::API
   rescue_from StandardError, with: :render_standard_error
   rescue_from ActionController::ParameterMissing, with: :render_parameter_missing
   rescue_from ActiveRecord::StaleObjectError, with: :render_stale_object_error
+  rescue_from ActiveRecord::RecordNotFound, with: :render_record_not_found
 
   private
 
@@ -20,18 +21,13 @@ class V1::ApplicationController < ActionController::API
   end
 
   def authenticate_project!(project_id)
-    # TODO: 指定したプロジェクトにcurrent_userが所属しているか確認する。
+    # 指定したプロジェクトにcurrent_userが所属しているか確認する。
     project = current_user.projects.find_by(id: project_id)
-
     project || response_forbidden
+  end
 
-    # unless project
-    #   # TODO: 権限がないエラー
-    #   # puts "not authenticate project:#{project_id}"
-    #   response_unauthorized
-    # end
-
-    # project
+  def render_standard_error(_e)
+    response_internal_server_error
   end
 
   def render_parameter_missing(e)
@@ -42,7 +38,11 @@ class V1::ApplicationController < ActionController::API
     response_conflict(e.record.class.to_s)
   end
 
-  def render_standard_error(_e)
-    response_internal_server_error
+  def render_record_not_found(e)
+    response_not_found("#{e.model} の #{e.primary_key} が #{e.id} のレコード")
+  end
+
+  def has_lock_version!(params, key)
+    raise ActionController::ParameterMissing, :lock_version if !params.key?(key) || !params[key].key?(:lock_version)
   end
 end

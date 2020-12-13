@@ -34,10 +34,7 @@ class V1::ProjectsController < V1::ApplicationController
 
   # PATCH/PUT /projects/1
   def update
-    if !params.key?(:project) || !params[:project].key?(:lock_version)
-      response_bad_request('必要なパラメーターが存在しないため、処理を実行できません(lock_version)')
-      return
-    end
+    has_lock_version!(params, :project)
 
     if @project.update(project_params)
       response_success_request(@project)
@@ -59,7 +56,6 @@ class V1::ProjectsController < V1::ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_project
-    # @project = Project.find(params[:id])
     @project = authenticate_project!(params[:id])
   end
 
