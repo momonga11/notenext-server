@@ -1,6 +1,7 @@
 class V1::ProjectsController < V1::ApplicationController
-  before_action :authenticate_user!
-  before_action :set_project, only: %i[show update destroy]
+  before_action lambda {
+    authenticate_project!(params[:id])
+  }, only: %i[show update destroy]
 
   # GET /projects
   def index
@@ -53,11 +54,6 @@ class V1::ProjectsController < V1::ApplicationController
   end
 
   private
-
-  # Use callbacks to share common setup or constraints between actions.
-  def set_project
-    @project = authenticate_project!(params[:id])
-  end
 
   # Only allow a trusted parameter "white list" through.
   def project_params

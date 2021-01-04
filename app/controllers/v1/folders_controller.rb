@@ -1,6 +1,7 @@
 class V1::FoldersController < V1::ApplicationController
-  before_action :authenticate_user!
-  before_action :set_project
+  before_action lambda {
+    authenticate_project!(params[:project_id])
+  }
   before_action :set_folder, only: %i[show update destroy]
 
   # GET /folders
@@ -56,9 +57,5 @@ class V1::FoldersController < V1::ApplicationController
   # Only allow a trusted parameter "white list" through.
   def folder_params
     params.require(:folder).permit(:name, :description, :lock_version)
-  end
-
-  def set_project
-    @project = authenticate_project!(params[:project_id])
   end
 end

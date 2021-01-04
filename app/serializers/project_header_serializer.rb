@@ -3,7 +3,13 @@ class ProjectHeaderSerializer < ActiveModel::Serializer
   attributes :user
 
   def user
-    current_user.as_json(only: %i[id name avatar])
+    response_data = current_user.as_json(only: %i[id name])
+    response_data[:avatar] = if current_user.avatar.attached?
+                               url_for(current_user.avatar)
+                             else
+                               ''
+                             end
+    response_data
   end
 
   has_many :folders, serializer: FolderNameSerializer

@@ -15,7 +15,7 @@ module ResponseRenderer
 
   # 400 Bad Request
   def response_bad_request(message)
-    render status: 400, json: { message: message }
+    render status: :bad_request, json: { message: message }
   end
 
   # 401 Unauthorized
@@ -45,7 +45,7 @@ module ResponseRenderer
   end
 
   # 500 Internal Server Error
-  def response_internal_server_error
-    render status: 500, json: { message: 'Internal Server Error' }
+  def response_internal_server_error(e)
+    render status: 500, json: { message: 'Internal Server Error', errors: e }
   end
 end

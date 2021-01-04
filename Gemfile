@@ -25,6 +25,26 @@ gem 'bootsnap', '>= 1.4.2', require: false
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 gem 'rack-cors'
 
+# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
+gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+
+# 環境変数管理
+gem 'dotenv-rails'
+
+# devise関連
+gem 'devise'
+# masterブランチで改修されているバグがあるので指定する
+gem 'devise_token_auth', :git => 'git://github.com/lynndylanhurley/devise_token_auth.git'
+
+# シリアライズ関連
+gem 'active_model_serializers', '~> 0.10.0'
+
+# 複合PK対応
+gem 'composite_primary_keys', '=12.0.3'
+
+# Active_Storageを添付ファイルのbase64に対応させる
+gem 'active_storage_base64'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
@@ -37,6 +57,9 @@ group :development, :test do
 
   # Test関連
   gem 'shoulda-matchers', '~> 4.0'
+
+  # N+1問題を検知するgem
+  gem 'bullet'
 end
 
 group :development do
@@ -51,19 +74,5 @@ group :development do
 
   # Test関連
   gem 'spring-commands-rspec'
+  gem 'rubocop-rspec', require: false
 end
-
-# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
-
-gem 'dotenv-rails'
-
-# devise関連
-gem 'devise'
-gem 'devise_token_auth'
-
-# シリアライズ関連
-gem 'active_model_serializers', '~> 0.10.0'
-
-# 複合PK対応
-gem 'composite_primary_keys', '=12.0.3'

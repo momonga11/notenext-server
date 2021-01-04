@@ -6,6 +6,7 @@ RSpec.describe Project, type: :model do
   it { is_expected.to have_many(:folders).dependent(:destroy) }
   it { is_expected.to have_many(:notes).dependent(:destroy) }
   it { is_expected.to have_many(:users_projects).dependent(:destroy) }
+  it { is_expected.to have_many(:users).through(:users_projects) }
 
   describe 'プロジェクトを作成する' do
     let(:user) { FactoryBot.create(:user) }
@@ -15,6 +16,7 @@ RSpec.describe Project, type: :model do
       project = Project.new(name: 'test', users: Array.new(1, user))
       expect(project).to be_valid
     end
+
     it '1ユーザーは2つ以上のプロジェクトを作成できない' do
       project = Project.new(name: 'test', users: Array.new(1, user_with_project))
       project.valid?

@@ -8,20 +8,30 @@ Rails.application.routes.draw do
   end
 
   scope :v1 do
-    mount_devise_token_auth_for 'User', at: 'auth', skip: %i[registrations session password]
+    mount_devise_token_auth_for 'User', at: 'auth', skip: %i[registrations password session confirmation], controllers: {
+      token_validations: 'v1/auth/token_validations'
+    }
 
     devise_scope :user do
       # session
-      post '/auth/sign_in', to: 'devise_token_auth/sessions#create'
-      delete '/auth/sign_out', to: 'devise_token_auth/sessions#destroy'
+      post '/auth/sign_in', to: 'devise_token_auth/sessions#create', as: :v1_auth_sign_in
+      delete '/auth/sign_out', to: 'devise_token_auth/sessions#destroy', as: :v1_auth_sign_out
 
       # password
-      put '/auth/password', to: 'devise_token_auth/passwords#update'
+      get '/auth/password', to: 'devise_token_auth/passwords#edit', as: :v1_edit_auth_password
+      post '/auth/password', to: 'devise_token_auth/passwords#create', as: :v1_auth_password_create
+      put '/auth/password', to: 'devise_token_auth/passwords#update', as: :v1_auth_password_update
 
       # registrations
-      post '/auth/sign_up', to: 'devise_token_auth/registrations#create'
-      put '/auth', to: 'devise_token_auth/registrations#update'
-      delete '/auth', to: 'devise_token_auth/registrations#destroy'
+      post '/auth/sign_up', to: 'v1/auth/registrations#create', as: :v1_auth_sign_up
+      put '/auth', to: 'v1/auth/registrations#update', as: :v1_auth
+      delete '/auth', to: 'v1/auth/registrations#destroy', as: :v1_auth_destory
+
+      # confirmation
+      get '/auth/confirmation', to: 'devise_token_auth/confirmations#show', as: :v1_auth_confirmation
+      post '/auth/confirmation', to: 'devise_token_auth/confirmations#create', as: :v1_auth_confirmation_create
+
+      delete '/auth/avatar', to: 'v1/auth/registrations#purge_avatar', as: :v1_auth_purge_avatar
     end
   end
 

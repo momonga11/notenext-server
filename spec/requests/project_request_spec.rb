@@ -11,8 +11,9 @@ RSpec.describe 'Projects', type: :request do
     it '認証されていない場合は取得できない' do
       auth_headers['access-token'] = '12345'
       get v1_projects_path, headers: auth_headers
-      expect(response). to have_http_status(401)
+      expect(response).to have_http_status(:unauthorized)
     end
+
     context '認証されている場合' do
       it 'ユーザーが所属しているプロジェクトのデータが取得できる' do
         get v1_projects_path, headers: auth_headers
@@ -25,8 +26,9 @@ RSpec.describe 'Projects', type: :request do
     it '認証されていない場合は取得できない' do
       auth_headers['access-token'] = '12345'
       get v1_project_path(user.projects.ids[0]), headers: auth_headers
-      expect(response). to have_http_status(401)
+      expect(response).to have_http_status(:unauthorized)
     end
+
     context '認証されている場合' do
       context 'クエリパラメーターにheader_infoが存在する場合' do
         context 'header_info=Trueの場合' do
@@ -40,19 +42,22 @@ RSpec.describe 'Projects', type: :request do
             expect(response_json[:user].key?(:avatar)).to be_truthy
             expect(response_json.key?(:folders)).to be_truthy
           end
+
           it 'ユーザーが所属していないヘッダー用プロジェクトのデータは取得できない' do
             get v1_project_path(user2.projects.ids[0]), params: { header_info: true }, headers: auth_headers
-            expect(response). to have_http_status(403)
+            expect(response).to have_http_status(:forbidden)
           end
         end
+
         context 'header_info=Falseの場合' do
           it 'ユーザーが所属しているプロジェクトのデータは取得できる' do
             get v1_project_path(user.projects.ids[0]), params: { header_info: false }, headers: auth_headers
             expect(json_parse_body(response)[:id]).to eq user.projects.ids[0]
           end
+
           it 'ユーザーが所属していないプロジェクトのデータは取得できない' do
             get v1_project_path(user2.projects.ids[0]), params: { header_info: false }, headers: auth_headers
-            expect(response). to have_http_status(403)
+            expect(response).to have_http_status(:forbidden)
           end
         end
       end
@@ -62,9 +67,10 @@ RSpec.describe 'Projects', type: :request do
           get v1_project_path(user.projects.ids[0]), headers: auth_headers
           expect(json_parse_body(response)[:id]).to eq user.projects.ids[0]
         end
+
         it 'ユーザーが所属していないプロジェクトのデータは取得できない' do
           get v1_project_path(user2.projects.ids[0]), headers: auth_headers
-          expect(response). to have_http_status(403)
+          expect(response).to have_http_status(:forbidden)
         end
       end
     end
@@ -76,10 +82,13 @@ RSpec.describe 'Projects', type: :request do
     let(:project_attributes) { FactoryBot.attributes_for(:project) }
 
     it '認証されていない場合は作成できない' do
-      auth_headers['access-token'] = '12345'
-      post v1_projects_path, params: { project: project_attributes }, headers: auth_headers
-      expect(response). to have_http_status(401)
+      expect do
+        auth_headers['access-token'] = '12345'
+        post v1_projects_path, params: { project: project_attributes }, headers: auth_headers
+      end.to change(user.projects, :count).by(0)
+      expect(response).to have_http_status(:unauthorized)
     end
+
     context '認証されている場合' do
       it 'ユーザーがオーナーのプロジェクトが一つもない場合は作成できる' do
         expect do
@@ -97,13 +106,18 @@ RSpec.describe 'Projects', type: :request do
 
       context 'パラメーターが異常値の場合' do
         it '作成できない' do
-          post v1_projects_path, params: { test: 'test' }, headers: auth_headers
-          expect(response). to have_http_status(400)
+          expect do
+            post v1_projects_path, params: { test: 'test' }, headers: auth_headers
+          end.to change(user.projects, :count).by(0)
+          expect(response).to have_http_status(:bad_request)
         end
+
         it 'nameが存在しない場合は作成できない' do
           project_attributes.reject! { |k| k == :name }
-          post v1_projects_path, params: { project: project_attributes }, headers: auth_headers
-          expect(response). to have_http_status(422)
+          expect do
+            post v1_projects_path, params: { project: project_attributes }, headers: auth_headers
+          end.to change(user.projects, :count).by(0)
+          expect(response).to have_http_status(:unprocessable_entity)
         end
       end
     end
@@ -115,40 +129,46 @@ RSpec.describe 'Projects', type: :request do
     it '認証されていない場合は更新できない' do
       auth_headers['access-token'] = '12345'
       put v1_project_path(user.projects.ids[0]), params: { project: project2_attributes }, headers: auth_headers
-      expect(response). to have_http_status(401)
+      expect(response).to have_http_status(:unauthorized)
     end
-    context '認証されている場合' do
+
+    context '認証されていない場合' do
       it 'ユーザーが所属するプロジェクトの場合は更新できる' do
         put v1_project_path(user.projects.ids[0]), params: { project: project2_attributes }, headers: auth_headers
         response_json = json_parse_body(response)
         expect(response.status).to eq(200)
         expect(response_json[:name]).to eq(project2_attributes[:name])
       end
+
       it 'ユーザーが所属しないプロジェクトの場合は更新できない' do
         put v1_project_path(user2.projects.ids[0]), params: { project: project2_attributes }, headers: auth_headers
         response_json = json_parse_body(response)
         expect(response.status).to eq(403)
         expect(response_json[:name]).not_to eq(project2_attributes[:name])
       end
+
       context 'パラメーターが異常値の場合' do
         it '更新できない' do
           put v1_project_path(user.projects.ids[0]), params: { test: 'test' }, headers: auth_headers
-          expect(response). to have_http_status(400)
+          expect(response).to have_http_status(:bad_request)
         end
+
         it 'nameがNULLの場合は更新できない' do
           project2_attributes[:name] = nil
           put v1_project_path(user.projects.ids[0]), params: { project: project2_attributes }, headers: auth_headers
-          expect(response). to have_http_status(422)
+          expect(response).to have_http_status(:unprocessable_entity)
         end
+
         it 'パラメーターにlock_versionが存在しない場合は更新できない' do
           project2_attributes.reject! { |k| k == :lock_version }
           put v1_project_path(user.projects.ids[0]), params: { project: project2_attributes }, headers: auth_headers
-          expect(response). to have_http_status(400)
+          expect(response).to have_http_status(:bad_request)
         end
+
         it 'DBのlock_versionと更新対象のlock_versionが異なる場合は更新できない' do
           project2_attributes[:lock_version] = -1
           put v1_project_path(user.projects.ids[0]), params: { project: project2_attributes }, headers: auth_headers
-          expect(response). to have_http_status(409)
+          expect(response).to have_http_status(:conflict)
         end
       end
     end
@@ -160,8 +180,9 @@ RSpec.describe 'Projects', type: :request do
       expect do
         delete v1_project_path(user.projects.ids[0]), headers: auth_headers
       end.to change(user.projects, :count).by(0)
-      expect(response). to have_http_status(401)
+      expect(response).to have_http_status(:unauthorized)
     end
+
     context '認証されている場合' do
       it 'ユーザーが所属するプロジェクトの場合は削除できる' do
         expect do
@@ -169,6 +190,7 @@ RSpec.describe 'Projects', type: :request do
         end.to change(user.projects, :count).by(-1)
         expect(response.status).to eq(200)
       end
+
       it 'ユーザーが所属しないプロジェクトの場合は削除できない' do
         expect do
           delete v1_project_path(user2.projects.ids[0]), headers: auth_headers

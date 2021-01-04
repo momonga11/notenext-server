@@ -29,7 +29,6 @@ class DeviseTokenAuthCreateUsers < ActiveRecord::Migration[6.0]
 
       ## User Info
       t.string :name, null: false
-      t.string :avatar
       t.string :email, null: false
 
       ## Tokens

@@ -4,6 +4,12 @@
 # and recreated between test runs. Don't rely on the data there!
 
 Rails.application.configure do
+  config.after_initialize do
+    Bullet.enable        = true
+    Bullet.bullet_logger = true
+    Bullet.raise         = true # raise an error if n+1 query occurs
+  end
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   config.cache_classes = false
@@ -40,10 +46,14 @@ Rails.application.configure do
   # The :test delivery method accumulates sent emails in the
   # ActionMailer::Base.deliveries array.
   config.action_mailer.delivery_method = :test
+  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 } # TODO: 本番ではURLのホスト名に変更すること
 
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
   # Raises error for missing translations.
   # config.action_view.raise_on_missing_translations = true
+
+  # Active Storageのattachにて発生するエラー対策 TODO: 不要かも？
+  config.autoloader = :classic
 end
