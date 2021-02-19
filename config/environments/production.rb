@@ -108,4 +108,7 @@ Rails.application.configure do
   # config.active_record.database_selector = { delay: 2.seconds }
   # config.active_record.database_resolver = ActiveRecord::Middleware::DatabaseSelector::Resolver
   # config.active_record.database_resolver_context = ActiveRecord::Middleware::DatabaseSelector::Resolver::Session
+
+  # システムエラー発生時のリダイレクト先のURL
+  config.redirect_system_error_url = 'http://localhost:8888/signin'
 end

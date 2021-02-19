@@ -14,6 +14,7 @@ require 'action_view/railtie'
 require 'action_cable/engine'
 # require "sprockets/railtie"
 require 'rails/test_unit/railtie'
+require 'active_support/core_ext/numeric'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -40,5 +41,25 @@ module Notenext
                        helper_specs: false,
                        routing_specs: false
     end
+
+    config.middleware.use Rack::Cors do
+      allow do
+        origins '*'
+        resource '*',
+                 headers: :any,
+                 expose: %w[access-token expiry token-type uid client],
+                 methods: %i[get post options delete put]
+      end
+    end
+
+    # タイムゾーン設定
+    config.time_zone = 'Tokyo'
+    config.active_record.default_timezone = :local
+
+    # 画像ファイルアップロード最大サイズ(MB)
+    config.max_size_upload_image_file = 8.megabyte
+
+    # 画像ファイル 形式制限
+    config.type_upload_image_file = %('image/jpeg image/png')
   end
 end

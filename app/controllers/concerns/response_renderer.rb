@@ -15,37 +15,39 @@ module ResponseRenderer
 
   # 400 Bad Request
   def response_bad_request(message)
-    render status: :bad_request, json: { message: message }
-  end
-
-  # 401 Unauthorized
-  def response_unauthorized
-    render status: :unauthorized
+    render status: :bad_request, json: create_error_response(message)
   end
 
   # 403 Forbidden
   def response_forbidden
-    # TODO: エラーメッセージの呼び出し
-    render status: :forbidden, json: { message: '' }
+    render status: :forbidden, json: create_error_response(I18n.t('response_errors.messages.forbidden'))
   end
 
   # 404 Not Found
   def response_not_found(resource)
-    render status: :not_found, json: { message: "#{resource} は見つかりませんでした。" }
+    render status: :not_found,
+           json: create_error_response(I18n.t('response_errors.messages.not_found', attribute: resource))
   end
 
   # 409 Conflict
-  def response_conflict(class_name)
-    render status: 409, json: { message: "#{class_name.capitalize}は最新の状態ではないため更新できません。アプリケーションをリロードしてくだい。" }
+  def response_conflict(model_name)
+    render status: 409, json: create_error_response(I18n.t('response_errors.messages.conflict', attribute: model_name))
   end
 
   # 422 Unprocessable_entity
   def response_unprocessable_entity(model)
-    render json: model.errors.full_messages, status: :unprocessable_entity
+    render status: :unprocessable_entity, json: create_error_response(model.errors.full_messages)
   end
 
   # 500 Internal Server Error
   def response_internal_server_error(e)
-    render status: 500, json: { message: 'Internal Server Error', errors: e }
+    logger.error(e)
+    render status: 500, json: create_error_response(I18n.t('response_errors.messages.internal_server'))
+  end
+
+  private
+
+  def create_error_response(messages)
+    { errors: [messages] }
   end
 end

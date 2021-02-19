@@ -66,5 +66,11 @@ Rails.application.configure do
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   # Active Storageのattachにて発生するエラー対策 TODO: 不要かも？
-  # config.autoloader = :classic
+  config.autoloader = :classic
+
+  # システムエラー発生時のリダイレクト先のURL
+  config.redirect_system_error_url = 'http://localhost:8888/systemerror'
 end
+
+# 画像のURL生成用 TODO:本番ではいらない？
+Rails.application.routes.default_url_options = { host: 'localhost', port: 3000 }

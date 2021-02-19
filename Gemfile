@@ -35,6 +35,7 @@ gem 'dotenv-rails'
 gem 'devise'
 # masterブランチで改修されているバグがあるので指定する
 gem 'devise_token_auth', :git => 'git://github.com/lynndylanhurley/devise_token_auth.git'
+gem 'devise-i18n'
 
 # シリアライズ関連
 gem 'active_model_serializers', '~> 0.10.0'

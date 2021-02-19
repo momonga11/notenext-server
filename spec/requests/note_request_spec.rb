@@ -24,79 +24,234 @@ RSpec.describe 'Notes', type: :request do
     context '認証されている場合' do
       let!(:note2) { FactoryBot.create(:note, project: user.projects[0], folder: folder) }
 
-      it 'ユーザーが所属しているプロジェクトの場合、ノートが取得できる（複数）' do
-        get v1_project_folder_notes_path(
-          project_id: user.projects[0].id,
-          folder_id: note.folder.id
-        ), headers: auth_headers
-        expect(json_parse_body(response).map { |note| note[:id] }).to eq folder.notes.ids
-        expect(json_parse_body(response).map { |note| note[:id] }.length).to eq 2
+      context 'ユーザーが所属しているプロジェクトの場合' do
+        context 'クエリパラメーターにwith_associationが存在する場合' do
+          subject do
+            get v1_project_folder_notes_path(
+              project_id: user.projects[0].id,
+              folder_id: folder_id
+            ), params: { with_association: with_association }, headers: auth_headers
+            response
+          end
+
+          context 'with_association=Trueの場合' do
+            let(:with_association) { true }
+            let(:folder_id) { note.folder.id }
+
+            it 'ノート(複数)と紐づくフォルダ情報が取得できる' do
+              expect(subject).to have_http_status(:ok)
+              expect(json_parse_body(response)[:notes].map { |note| note[:id] }).to eq folder.notes.ids
+              expect(json_parse_body(response)[:notes].map { |note| note[:id] }.length).to eq 2
+              expect(json_parse_body(response)[:id]).to eq folder.id
+              expect(json_parse_body(response)[:name]).to eq folder.name
+              expect(json_parse_body(response)[:description]).to eq folder.description
+            end
+
+            context 'フォルダIDが存在しない場合' do
+              let(:folder_id) { -1 }
+
+              it 'ノートは取得できない' do
+                expect(subject).to have_http_status(:not_found)
+              end
+            end
+          end
+
+          context 'with_association=Falseの場合' do
+            let(:with_association) { false }
+            let(:folder_id) { note.folder.id }
+
+            it 'ノートが取得できる(複数)' do
+              expect(subject).to have_http_status(:ok)
+              expect(json_parse_body(response).map { |note| note[:id] }).to eq folder.notes.ids
+              expect(json_parse_body(response).map { |note| note[:id] }.length).to eq 2
+            end
+
+            context 'フォルダIDが存在しない場合' do
+              let(:folder_id) { -1 }
+
+              it 'ノートは取得できない' do
+                expect(subject).to have_http_status(:not_found)
+              end
+            end
+          end
+        end
+
+        context 'クエリパラメーターにwith_associationが存在しない場合' do
+          subject do
+            get v1_project_folder_notes_path(
+              project_id: user.projects[0].id,
+              folder_id: folder_id
+            ), headers: auth_headers
+            response
+          end
+
+          context 'フォルダIDが存在する場合' do
+            let(:folder_id) { note.folder.id }
+
+            it 'ノートが取得できる(複数)' do
+              expect(subject).to have_http_status(:ok)
+              expect(json_parse_body(response).map { |note| note[:id] }).to eq folder.notes.ids
+              expect(json_parse_body(response).map { |note| note[:id] }.length).to eq 2
+            end
+          end
+
+          context 'フォルダIDが存在しない場合' do
+            let(:folder_id) { -1 }
+
+            it 'ノートは取得できない' do
+              expect(subject).to have_http_status(:not_found)
+            end
+          end
+        end
       end
 
-      it 'ユーザーが所属していないプロジェクトの場合、ノートは取得できない' do
-        get v1_project_folder_notes_path(
-          project_id: user_dummy.projects[0].id,
-          folder_id: note_dummy.folder.id
-        ), headers: auth_headers
-        expect(response).to have_http_status(:forbidden)
-      end
+      context 'ユーザーが所属していないプロジェクトの場合、ノートは取得できない' do
+        context 'クエリパラメーターにwith_associationが存在する場合' do
+          it 'ノートは取得できない' do
+            get v1_project_folder_notes_path(
+              project_id: user_dummy.projects[0].id,
+              folder_id: note_dummy.folder.id
+            ), params: { with_association: true }, headers: auth_headers
+            expect(response).to have_http_status(:forbidden)
+          end
+        end
 
-      it 'フォルダIDが存在しない場合、ノートは取得できない' do
-        get v1_project_folder_notes_path(
-          project_id: user.projects[0].id,
-          folder_id: -1
-        ), headers: auth_headers
-        expect(response).to have_http_status(:not_found)
+        context 'クエリパラメーターにwith_associationが存在しない場合' do
+          it 'ノートは取得できない' do
+            get v1_project_folder_notes_path(
+              project_id: user_dummy.projects[0].id,
+              folder_id: note_dummy.folder.id
+            ), headers: auth_headers
+            expect(response).to have_http_status(:forbidden)
+          end
+        end
       end
     end
   end
 
-  describe 'GET #show' do
+  describe 'GET #all' do
+    let!(:folder2) { FactoryBot.create(:folder, project: user.projects[0]) }
+    let!(:note2) { FactoryBot.create(:note, project: user.projects[0], folder: folder2) }
+    let!(:note_dummy) { FactoryBot.create(:note, project: user_dummy.projects[0], folder: folder_dummy) }
+
     it '認証されていない場合は取得できない' do
       auth_headers['access-token'] = '12345'
-      get v1_project_folder_note_path(
-        project_id: user.projects[0].id,
-        folder_id: note.folder.id,
-        id: note.id
+      get v1_project_notes_path(
+        project_id: note.project_id
       ), headers: auth_headers
       expect(response).to have_http_status(:unauthorized)
     end
 
     context '認証されている場合' do
-      it 'ユーザーが所属しているプロジェクトの場合、ノートが取得できる' do
-        get v1_project_folder_note_path(
-          project_id: user.projects[0].id,
-          folder_id: note.folder.id,
-          id: note.id
-        ), headers: auth_headers
-        expect(json_parse_body(response)[:id]).to eq note.id
-      end
+      context 'ユーザーが所属しているプロジェクトの場合' do
+        it 'フォルダを跨いでノートが取得できる(複数)' do
+          get v1_project_notes_path(
+            project_id: note.project_id
+          ), headers: auth_headers
 
-      it 'ユーザーが所属していないプロジェクトの場合、ノートは取得できない' do
-        get v1_project_folder_note_path(
-          project_id: user_dummy.projects[0].id,
-          folder_id: note_dummy.folder.id,
-          id: note_dummy.id
+          expect(response).to have_http_status(:ok)
+          expect(json_parse_body(response).map { |note| note[:id] }).to eq(folder.notes.ids + folder2.notes.ids)
+          expect(json_parse_body(response).map { |note| note[:id] }.length).to eq 2
+        end
+      end
+    end
+
+    context 'ユーザーが所属していないプロジェクトの場合' do
+      it 'ノートが取得できない' do
+        get v1_project_notes_path(
+          project_id: user_dummy.projects[0].id
         ), headers: auth_headers
+
         expect(response).to have_http_status(:forbidden)
       end
+    end
+  end
 
-      it 'ノートIDが存在しない場合、ノートは取得できない' do
+  describe 'GET #show' do
+    describe 'フォルダIDを指定する' do
+      it '認証されていない場合は取得できない' do
+        auth_headers['access-token'] = '12345'
         get v1_project_folder_note_path(
           project_id: user.projects[0].id,
           folder_id: note.folder.id,
-          id: -1
-        ), headers: auth_headers
-        expect(response).to have_http_status(:not_found)
-      end
-
-      it 'フォルダIDが存在しない場合、ノートは取得できない' do
-        get v1_project_folder_note_path(
-          project_id: user.projects[0].id,
-          folder_id: -1,
           id: note.id
         ), headers: auth_headers
-        expect(response).to have_http_status(:not_found)
+        expect(response).to have_http_status(:unauthorized)
+      end
+
+      context '認証されている場合' do
+        it 'ユーザーが所属しているプロジェクトの場合はノートが取得できる' do
+          get v1_project_folder_note_path(
+            project_id: user.projects[0].id,
+            folder_id: note.folder.id,
+            id: note.id
+          ), headers: auth_headers
+          expect(json_parse_body(response)[:id]).to eq note.id
+        end
+
+        it 'ユーザーが所属していないプロジェクトの場合、ノートは取得できない' do
+          get v1_project_folder_note_path(
+            project_id: user_dummy.projects[0].id,
+            folder_id: note_dummy.folder.id,
+            id: note_dummy.id
+          ), headers: auth_headers
+          expect(response).to have_http_status(:forbidden)
+        end
+
+        it 'ノートIDが存在しない場合、ノートは取得できない' do
+          get v1_project_folder_note_path(
+            project_id: user.projects[0].id,
+            folder_id: note.folder.id,
+            id: -1
+          ), headers: auth_headers
+          expect(response).to have_http_status(:not_found)
+        end
+
+        it 'フォルダIDが存在しない場合、ノートは取得できない' do
+          get v1_project_folder_note_path(
+            project_id: user.projects[0].id,
+            folder_id: -1,
+            id: note.id
+          ), headers: auth_headers
+          expect(response).to have_http_status(:not_found)
+        end
+      end
+    end
+
+    describe 'フォルダIDを指定しない' do
+      it '認証されていない場合は取得できない' do
+        auth_headers['access-token'] = '12345'
+        get v1_project_note_path(
+          project_id: user.projects[0].id,
+          id: note.id
+        ), headers: auth_headers
+        expect(response).to have_http_status(:unauthorized)
+      end
+
+      context '認証されている場合' do
+        it 'ユーザーが所属しているプロジェクトの場合はノートが取得できる' do
+          get v1_project_note_path(
+            project_id: user.projects[0].id,
+            id: note.id
+          ), headers: auth_headers
+          expect(json_parse_body(response)[:id]).to eq note.id
+        end
+
+        it 'ユーザーが所属していないプロジェクトの場合、ノートは取得できない' do
+          get v1_project_note_path(
+            project_id: user_dummy.projects[0].id,
+            id: note_dummy.id
+          ), headers: auth_headers
+          expect(response).to have_http_status(:forbidden)
+        end
+
+        it 'ノートIDが存在しない場合、ノートは取得できない' do
+          get v1_project_note_path(
+            project_id: user.projects[0].id,
+            id: -1
+          ), headers: auth_headers
+          expect(response).to have_http_status(:not_found)
+        end
       end
     end
   end

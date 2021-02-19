@@ -56,4 +56,7 @@ Rails.application.configure do
 
   # Active Storageのattachにて発生するエラー対策 TODO: 不要かも？
   config.autoloader = :classic
+
+  # システムエラー発生時のリダイレクト先のURL
+  config.redirect_system_error_url = 'http://localhost:8888/signin'
 end

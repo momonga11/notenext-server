@@ -1,4 +1,6 @@
-class ProjectHeaderSerializer < ActiveModel::Serializer
+class ProjectWithAssociationSerializer < ActiveModel::Serializer
+  include Rails.application.routes.url_helpers
+
   attributes :id, :name
   attributes :user
 

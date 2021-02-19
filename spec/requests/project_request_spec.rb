@@ -30,10 +30,10 @@ RSpec.describe 'Projects', type: :request do
     end
 
     context '認証されている場合' do
-      context 'クエリパラメーターにheader_infoが存在する場合' do
-        context 'header_info=Trueの場合' do
+      context 'クエリパラメーターにwith_associationが存在する場合' do
+        context 'with_association=Trueの場合' do
           it 'ユーザーが所属しているヘッダー用プロジェクトのデータは取得できる' do
-            get v1_project_path(user.projects.ids[0]), params: { header_info: true }, headers: auth_headers
+            get v1_project_path(user.projects.ids[0]), params: { with_association: true }, headers: auth_headers
             response_json = json_parse_body(response)
             expect(response_json[:id]).to eq user.projects.ids[0]
             # response.bodyの検証
@@ -44,25 +44,25 @@ RSpec.describe 'Projects', type: :request do
           end
 
           it 'ユーザーが所属していないヘッダー用プロジェクトのデータは取得できない' do
-            get v1_project_path(user2.projects.ids[0]), params: { header_info: true }, headers: auth_headers
+            get v1_project_path(user2.projects.ids[0]), params: { with_association: true }, headers: auth_headers
             expect(response).to have_http_status(:forbidden)
           end
         end
 
-        context 'header_info=Falseの場合' do
+        context 'with_association=Falseの場合' do
           it 'ユーザーが所属しているプロジェクトのデータは取得できる' do
-            get v1_project_path(user.projects.ids[0]), params: { header_info: false }, headers: auth_headers
+            get v1_project_path(user.projects.ids[0]), params: { with_association: false }, headers: auth_headers
             expect(json_parse_body(response)[:id]).to eq user.projects.ids[0]
           end
 
           it 'ユーザーが所属していないプロジェクトのデータは取得できない' do
-            get v1_project_path(user2.projects.ids[0]), params: { header_info: false }, headers: auth_headers
+            get v1_project_path(user2.projects.ids[0]), params: { with_association: false }, headers: auth_headers
             expect(response).to have_http_status(:forbidden)
           end
         end
       end
 
-      context 'クエリパラメーターにheader_infoが存在しない場合' do
+      context 'クエリパラメーターにwith_associationが存在しない場合' do
         it 'ユーザーが所属しているプロジェクトのデータは取得できる' do
           get v1_project_path(user.projects.ids[0]), headers: auth_headers
           expect(json_parse_body(response)[:id]).to eq user.projects.ids[0]

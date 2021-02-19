@@ -75,7 +75,6 @@ FactoryBot.define do
     end
 
     trait :update_password do
-      current_password { 'password1' }
       password { 'password2' }
       password_confirmation { 'password2' }
     end
@@ -87,24 +86,19 @@ FactoryBot.define do
     end
 
     trait :not_equal_password_confirmation do
-      current_password { 'password1' }
       password { 'password2' }
       password_confirmation { 'password3' }
     end
 
-    trait :not_exist_current_password do
-      name { 'testUser3' }
-      email { 'testupdate1@example.com' }
-      password { 'password1' }
+    trait :exist_current_password do
+      current_password { 'password1' }
     end
 
     trait :not_exist_password do
-      current_password { 'password1' }
       password_confirmation { 'password2' }
     end
 
     trait :not_exist_password_confirmation do
-      current_password { 'password1' }
       password { 'password2' }
     end
   end

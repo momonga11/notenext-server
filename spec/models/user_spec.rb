@@ -23,7 +23,7 @@ RSpec.describe User, type: :model do
   end
 
   describe 'attach avatar' do
-    let(:user) { FactoryBot.build(:user_new) }
+    let(:user) { FactoryBot.create(:user_new) }
     let(:avatar) do
       avatar64 = Base64.encode64(IO.read('spec/fixtures/neko_test.jpg'))
       { data: "data:image/jpeg;base64,#{avatar64}", filename: 'neko_test.jpg' }
@@ -34,6 +34,38 @@ RSpec.describe User, type: :model do
         user.update(avatar: avatar)
         expect(user.avatar.attached?).to be_truthy
       end
+
+      context 'avatar_size' do
+        before do
+          @max_size = Rails.application.config.max_size_upload_image_file
+          Rails.application.config.max_size_upload_image_file = 1.kilobyte
+        end
+
+        after do
+          Rails.application.config.max_size_upload_image_file = @max_size
+        end
+
+        it 'avatarのサイズが最大サイズ以上の場合、エラーとなること' do
+          user.update(avatar: avatar)
+          expect(user.errors[:avatar]).to include('のサイズは0MB以下にしてください')
+        end
+      end
+
+      context 'avatar_type' do
+        before do
+          @type = Rails.application.config.type_upload_image_file
+          Rails.application.config.type_upload_image_file = %('image/png')
+        end
+
+        after do
+          Rails.application.config.type_upload_image_file = @type
+        end
+
+        it 'avatarの形式が許容されている拡張子以外の場合、エラーとなること' do
+          user.update(avatar: avatar)
+          expect(user.errors[:avatar]).to include('にはjpegまたはpng形式のファイルを選択してください')
+        end
+      end
     end
 
     context 'destroy' do
@@ -42,9 +74,9 @@ RSpec.describe User, type: :model do
       end
 
       it 'userを削除すると、avatarのファイルも削除されること' do
+        sleep(1) # DBのロールバックが追いつかないのか、ここで時間をおかないと後続テストでエラーが出るため、待機する
         expect(user.destroy).to be_truthy
         expect(user.avatar.attached?).to be_falsey
-        sleep(0.5) # DBのロールバックが追いつかないのか、ここで時間をおかないと後続テストでエラーが出るため、待機する
       end
     end
   end

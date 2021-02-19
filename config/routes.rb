@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
   namespace :v1 do
     resources :projects, only: %i[index show create update destroy] do
+      get 'notes', to: 'notes#all'
+      resources :notes, only: :show
       resources :folders, only: %i[index show create update destroy] do
         resources :notes
       end
@@ -18,20 +20,19 @@ Rails.application.routes.draw do
       delete '/auth/sign_out', to: 'devise_token_auth/sessions#destroy', as: :v1_auth_sign_out
 
       # password
-      get '/auth/password', to: 'devise_token_auth/passwords#edit', as: :v1_edit_auth_password
-      post '/auth/password', to: 'devise_token_auth/passwords#create', as: :v1_auth_password_create
-      put '/auth/password', to: 'devise_token_auth/passwords#update', as: :v1_auth_password_update
+      get '/auth/password', to: 'v1/auth/passwords#edit', as: :v1_edit_auth_password
+      post '/auth/password', to: 'v1/auth/passwords#create', as: :v1_auth_password_create
+      put '/auth/password', to: 'v1/auth/passwords#update', as: :v1_auth_password_update
 
       # registrations
       post '/auth/sign_up', to: 'v1/auth/registrations#create', as: :v1_auth_sign_up
       put '/auth', to: 'v1/auth/registrations#update', as: :v1_auth
       delete '/auth', to: 'v1/auth/registrations#destroy', as: :v1_auth_destory
+      delete '/auth/avatar', to: 'v1/auth/registrations#destroy_avatar', as: :v1_auth_avatar
 
       # confirmation
-      get '/auth/confirmation', to: 'devise_token_auth/confirmations#show', as: :v1_auth_confirmation
-      post '/auth/confirmation', to: 'devise_token_auth/confirmations#create', as: :v1_auth_confirmation_create
-
-      delete '/auth/avatar', to: 'v1/auth/registrations#purge_avatar', as: :v1_auth_purge_avatar
+      get '/auth/confirmation', to: 'v1/auth/confirmations#show', as: :v1_auth_confirmation
+      post '/auth/confirmation', to: 'v1/auth/confirmations#create', as: :v1_auth_confirmation_create
     end
   end
 

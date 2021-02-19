@@ -235,7 +235,7 @@ RSpec.describe 'Users', type: :request do
           end
         end
 
-        context 'case exist avatar in parameter', focus: :true do
+        context 'case exist avatar in parameter' do
           let(:filename) { 'neko_test.jpg' }
           let(:user_for_update_attribute) do
             add_param_avatar(FactoryBot.attributes_for(:user_for_update, :update_email), filename)
@@ -307,22 +307,13 @@ RSpec.describe 'Users', type: :request do
             FactoryBot.attributes_for(:user_for_update, :not_equal_current_password)
           end
 
-          it_behaves_like 'not update user', 'Current passwordは不正な値です'
-        end
-
-        context 'parameterにpasswordが存在するが、current_passwordが存在しない場合' do
-          let(:user) { FactoryBot.create(:user_for_update, :create_user) }
-          let(:user_for_update_attribute) do
-            FactoryBot.attributes_for(:user_for_update, :not_exist_current_password)
-          end
-
-          it_behaves_like 'not update user', 'Current passwordを入力してください'
+          it_behaves_like 'not update user', '現在のパスワードは不正な値です'
         end
       end
     end
   end
 
-  describe 'DELETE registration#purge_avatar' do
+  describe 'DELETE registration#destroy_avatar' do
     let(:avatar_attribute) do
       avatar64 = Base64.encode64(IO.read('spec/fixtures/neko_test.jpg'))
       { data: "data:image/jpeg;base64,#{avatar64}", filename: 'neko_test.jpg' }
@@ -334,14 +325,14 @@ RSpec.describe 'Users', type: :request do
       end
 
       it 'failure' do
-        delete v1_auth_purge_avatar_path
+        delete v1_auth_avatar_path
         expect(response).to have_http_status(:not_found)
       end
     end
 
     context '認証を事前に実施した場合' do
       subject do
-        delete v1_auth_purge_avatar_path, headers: auth_params
+        delete v1_auth_avatar_path, headers: auth_params
         response
       end
 
@@ -374,7 +365,7 @@ RSpec.describe 'Users', type: :request do
         end
       end
 
-      context 'avatarが設定されていない場合', focus: :true do
+      context 'avatarが設定されていない場合' do
         it 'avatarの削除に失敗する' do
           expect(subject).to have_http_status(:not_found)
           expect(User.find(user.id).avatar.attached?).to be_falsey
@@ -451,7 +442,7 @@ RSpec.describe 'Users', type: :request do
       before do
         user.password = 'bad-Password'
 
-        # 20回ログインに失敗させる
+        # 20回ログインを失敗させる
         20.times do
           login(user)
         end
@@ -538,14 +529,14 @@ RSpec.describe 'Users', type: :request do
       context 'uncorrect reset_password_token' do
         it 'failure' do
           get v1_edit_auth_password_path, params: { reset_password_token: 'badToken' }
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:found)
         end
       end
 
       context '必要なparameterが完全に異なる場合' do
         it 'failure' do
           get v1_edit_auth_password_path, params: { test: 'test' }
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:found)
         end
       end
     end
@@ -589,8 +580,8 @@ RSpec.describe 'Users', type: :request do
         end
       end
 
-      context '認証ヘッダーが存在する場合' do
-        context 'parameterにcurrent_passwordとpasswordとpassword_confirmationが存在した場合' do
+      context '認証ヘッダがが存在する場合' do
+        context 'parameterにpasswordとpassword_confirmationが存在した場合' do
           it 'パスワードを変更できる' do
             expect(subject).to have_http_status(:ok)
 
@@ -625,17 +616,9 @@ RSpec.describe 'Users', type: :request do
           it_behaves_like 'not update user', '一致しません'
         end
 
-        context 'current_passwordが現在のパスワードと一致ない場合' do
+        context 'parameterにcurrent_passwordが存在する場合' do
           let(:user_for_password_attribute) do
-            FactoryBot.attributes_for(:user_for_update, :not_equal_current_password)
-          end
-
-          it_behaves_like 'not update user', 'Current passwordは不正な値です'
-        end
-
-        context 'parameterにcurrent_passwordが存在しない場合' do
-          let(:user_for_password_attribute) do
-            FactoryBot.attributes_for(:user_for_update, :not_exist_current_password)
+            FactoryBot.attributes_for(:user_for_update, :exist_current_password)
           end
 
           it_behaves_like 'not update user', 'パラメータが与えられていません'
@@ -655,6 +638,47 @@ RSpec.describe 'Users', type: :request do
           end
 
           it_behaves_like 'not update user', 'パラメータが与えられていません'
+        end
+      end
+    end
+
+    context '認証(ログイン)を事前に実施しない場合' do
+      context 'parameterにpasswordとpassword_confirmationが存在した場合' do
+        subject do
+          put v1_auth_password_update_path,
+              params: { password: 'password2', password_confirmation: 'password2' },
+              headers: auth_params
+          response
+        end
+
+        context '認証情報が誤っている場合' do
+          let(:auth_params) do
+            # password reset
+            auth_params = get_auth_params_from_reset_password(user.email)
+            auth_params['access-token'] = '12345'
+            auth_params
+          end
+
+          it 'パスワードを変更できない' do
+            expect(subject).to have_http_status(:unauthorized)
+          end
+        end
+
+        context '認証情報が正しい場合' do
+          let(:auth_params) do
+            # password reset
+            get_auth_params_from_reset_password(user.email)
+          end
+
+          it 'パスワードを変更できる' do
+            expect(subject).to have_http_status(:ok)
+
+            # 新しいパスワードでログインできるかどうか
+            user_new = User.new(email: user.email,
+                                password: user_for_password_attribute[:password])
+            login(user_new)
+            expect(response).to have_http_status(:ok)
+          end
         end
       end
     end
@@ -744,5 +768,28 @@ RSpec.describe 'Users', type: :request do
       { data: "data:image/jpeg;base64,#{avatar64}",
         filename: filename }
     params
+  end
+
+  def get_auth_params_from_reset_password(email)
+    # password reset
+    post v1_auth_password_create_path, params: { email: email }
+    @mail = ActionMailer::Base.deliveries.last
+    mail_redirect_url = CGI.unescape(@mail.body.match(/redirect_url=([^&]*)&/)[1])
+    mail_reset_token  = @mail.body.match(/reset_password_token=(.*)"/)[1]
+    get v1_edit_auth_password_path,
+        params: { reset_password_token: mail_reset_token, redirect_url: mail_redirect_url }
+
+    location = URI.decode_www_form(response.headers['Location'])
+    client = location.find { |key, _value| key == 'client' }[1]
+    token = location.find { |key, _value| key == 'token' }[1]
+    expiry = location.find { |key, _value| key == 'expiry' }[1]
+    uid = location.find { |key, _value| key == 'uid' }[1]
+
+    {
+      'access-token' => token,
+      'client' => client,
+      'uid' => uid,
+      'expiry' => expiry
+    }
   end
 end

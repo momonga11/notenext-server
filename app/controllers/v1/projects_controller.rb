@@ -13,8 +13,8 @@ class V1::ProjectsController < V1::ApplicationController
   # GET /projects/1
   def show
     # 特定のパラメータが渡った時、初期描画用にプロジェクト、フォルダー、ユーザーの情報を抜粋して渡す。
-    if params.key?(:header_info) && params[:header_info]
-      render json: @project, serializer: ProjectHeaderSerializer, scope: current_user
+    if params.key?(:with_association) && ActiveRecord::Type::Boolean.new.cast(params[:with_association])
+      render json: @project, serializer: ProjectWithAssociationSerializer, scope: current_user
     else
       render json: @project
     end
@@ -35,6 +35,7 @@ class V1::ProjectsController < V1::ApplicationController
 
   # PATCH/PUT /projects/1
   def update
+    # sleep 2
     has_lock_version!(params, :project)
 
     if @project.update(project_params)

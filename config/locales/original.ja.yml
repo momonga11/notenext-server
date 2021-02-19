@@ -1,0 +1,10 @@
+---
+ja:
+  response_errors:
+    messages:
+      forbidden: データの利用権限が存在しません
+      not_found: "%{attribute}は見つかりませんでした"
+      conflict: "%{attribute}は最新の状態ではないため更新できません。アプリケーションをリロードしてください"
+      not_routing: 指定されたURLは存在しません
+      parameter_missing: "必要なパラメーターが存在しない、または空のため、処理を実行できません(%{attribute})"
+      internal_server: "Internal Server Error(申し訳ございません。現在、アプリケーションは利用できません)"

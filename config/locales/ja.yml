@@ -133,6 +133,8 @@ ja:
       too_long: は%{count}文字以内で入力してください
       too_short: は%{count}文字以上で入力してください
       wrong_length: は%{count}文字で入力してください
+      too_max_image_size: のサイズは%{size}MB以下にしてください
+      image_type: にはjpegまたはpng形式のファイルを選択してください
     template:
       body: 次の項目を確認してください
       header:
