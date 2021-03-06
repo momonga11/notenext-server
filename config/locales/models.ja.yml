@@ -6,6 +6,7 @@ ja:
       project: プロジェクト
       folder: フォルダ
       note: ノート
+      user_sample: サンプルユーザー
     attributes:
       user:
         name: ユーザー名
@@ -20,6 +21,7 @@ ja:
         title: タイトル
         text: 本文
         htmltext: 本文
+        images: 画像ファイル
   attributes:
     description: 説明
     created_at: 作成日時

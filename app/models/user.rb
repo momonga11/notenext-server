@@ -16,16 +16,16 @@ class User < ActiveRecord::Base
   has_many :users_projects, dependent: :destroy
   has_many :projects, through: :users_projects
   has_one_base64_attached :avatar
-  validate :avatar_size, on: [:update,:create]
-  validate :avatar_type, on: [:update,:create]
+  has_one :user_sample, dependent: :destroy
+  validate :avatar_size, on: %i[update create], if: :avatar_attached?
+  validate :avatar_type, on: %i[update create], if: :avatar_attached?
 
   after_destroy do |user|
+    # なぜかuserは明示的にpurgeが必要
     user.avatar.purge if user.avatar.attached?
   end
 
   def avatar_size
-    return unless avatar.attached?
-
     if avatar.byte_size > Rails.application.config.max_size_upload_image_file
       errors.add(:avatar, :too_max_image_size,
                  size: (Rails.application.config.max_size_upload_image_file / 1.megabyte).round)
@@ -33,8 +33,10 @@ class User < ActiveRecord::Base
   end
 
   def avatar_type
-    return unless avatar.attached?
-
     errors.add(:avatar, :image_type) unless avatar.content_type.in?(Rails.application.config.type_upload_image_file)
+  end
+
+  def avatar_attached?
+    avatar.attached?
   end
 end

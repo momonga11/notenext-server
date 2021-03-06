@@ -102,4 +102,13 @@ FactoryBot.define do
       password { 'password2' }
     end
   end
+
+  factory :sample_user, class: 'User' do
+    name { 'testUser1' }
+    sequence(:email) { |n| "test#{n}@example.com" }
+    password { 'password' }
+    provider { 'email' }
+    sequence(:uid) { |n| "test#{n}@example.com" }
+    confirmed_at { Time.now }
+  end
 end

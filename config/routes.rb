@@ -2,11 +2,13 @@ Rails.application.routes.draw do
   namespace :v1 do
     resources :projects, only: %i[index show create update destroy] do
       get 'notes', to: 'notes#all'
+      put 'notes/:id/images/attach', to: 'notes#attach_image', as: :note_image_attach
       resources :notes, only: :show
       resources :folders, only: %i[index show create update destroy] do
         resources :notes
       end
     end
+    get 'users/sample', to: 'users#show_sample'
   end
 
   scope :v1 do
@@ -16,8 +18,9 @@ Rails.application.routes.draw do
 
     devise_scope :user do
       # session
-      post '/auth/sign_in', to: 'devise_token_auth/sessions#create', as: :v1_auth_sign_in
-      delete '/auth/sign_out', to: 'devise_token_auth/sessions#destroy', as: :v1_auth_sign_out
+      post '/auth/sign_in', to: 'v1/auth/sessions#create', as: :v1_auth_sign_in
+      delete '/auth/sign_out', to: 'v1/auth/sessions#destroy', as: :v1_auth_sign_out
+      post '/auth/sign_in_sample', to: 'v1/auth/sessions#create_sample', as: :v1_auth_sign_in_sample
 
       # password
       get '/auth/password', to: 'v1/auth/passwords#edit', as: :v1_edit_auth_password
@@ -35,6 +38,4 @@ Rails.application.routes.draw do
       post '/auth/confirmation', to: 'v1/auth/confirmations#create', as: :v1_auth_confirmation_create
     end
   end
-
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 end

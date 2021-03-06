@@ -30,7 +30,7 @@ RSpec.describe User, type: :model do
     end
 
     context 'update' do
-      it 'avatarが存在すれば登録できること' do
+      it 'avatarが存在すれば更新できること' do
         user.update(avatar: avatar)
         expect(user.avatar.attached?).to be_truthy
       end

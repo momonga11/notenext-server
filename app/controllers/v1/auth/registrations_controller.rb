@@ -1,8 +1,6 @@
 class V1::Auth::RegistrationsController < DeviseTokenAuth::RegistrationsController
   before_action :set_user_by_token, only: %i[destroy update destroy_avatar]
 
-  # TODO: 画像じゃない場合は弾く
-
   def destroy_avatar
     if @resource
       if @resource.avatar.attached?

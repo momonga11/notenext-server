@@ -315,8 +315,8 @@ RSpec.describe 'Users', type: :request do
 
   describe 'DELETE registration#destroy_avatar' do
     let(:avatar_attribute) do
-      avatar64 = Base64.encode64(IO.read('spec/fixtures/neko_test.jpg'))
-      { data: "data:image/jpeg;base64,#{avatar64}", filename: 'neko_test.jpg' }
+      avatar_encoded = Base64.encode64(IO.read('spec/fixtures/neko_test.jpg'))
+      { data: "data:image/jpeg;base64,#{avatar_encoded}", filename: 'neko_test.jpg' }
     end
 
     context '認証されていない場合' do
@@ -501,6 +501,33 @@ RSpec.describe 'Users', type: :request do
           get v1_auth_validate_token_path, headers: auth_params
           expect(response).to have_http_status(:unauthorized)
         end
+      end
+    end
+  end
+
+  describe 'POST session#create_sample', focus: :true do
+    let(:user) { FactoryBot.create(:sample_user) }
+    let!(:user_sample) { FactoryBot.create(:user_sample, user: user) }
+
+    context 'exist sample user' do
+      it 'success signin' do
+        expect do
+          post v1_auth_sign_in_sample_path
+        end.to change(UserSample.where(payout: false), :count).by(-1)
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context 'not exist sample user' do
+      before do
+        post v1_auth_sign_in_sample_path
+      end
+
+      it 'failure signin' do
+        expect do
+          post v1_auth_sign_in_sample_path
+        end.to change(UserSample.where(payout: false), :count).by(0)
+        expect(response).to have_http_status(:not_found)
       end
     end
   end
@@ -763,9 +790,9 @@ RSpec.describe 'Users', type: :request do
   end
 
   def add_param_avatar(params, filename)
-    avatar64 = Base64.encode64(IO.read("spec/fixtures/#{filename}"))
+    avatar_encoded = Base64.encode64(IO.read("spec/fixtures/#{filename}"))
     params[:avatar] =
-      { data: "data:image/jpeg;base64,#{avatar64}",
+      { data: "data:image/jpeg;base64,#{avatar_encoded}",
         filename: filename }
     params
   end
