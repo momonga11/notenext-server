@@ -1,1 +1,9 @@
 require: rubocop-rspec
+
+Style/StringLiterals:
+  Enabled: true
+  EnforcedStyle: single_quotes
+
+# 日本語のコメントを許可する
+Style/AsciiComments:
+  Enabled: false
