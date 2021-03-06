@@ -5,7 +5,7 @@ class CreateNotes < ActiveRecord::Migration[6.0]
       t.references :folder, null: false, foreign_key: true
       t.string :title
       t.text :text
-      t.text :htmltext
+      t.text :htmltext, size: :long
       t.integer :lock_version, default: 0
 
       t.timestamps

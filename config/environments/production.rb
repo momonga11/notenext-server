@@ -36,6 +36,8 @@ Rails.application.configure do
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
+  # ファイル追加時は上書きではなく、追加とする
+  config.active_storage.replace_on_assign_to_many = false
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
@@ -112,3 +114,6 @@ Rails.application.configure do
   # システムエラー発生時のリダイレクト先のURL
   config.redirect_system_error_url = 'http://localhost:8888/signin'
 end
+
+# 画像のURL生成用 TODO:本番ではいらない？
+Rails.application.routes.default_url_options = { host: 'localhost', port: 3000 }

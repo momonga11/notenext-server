@@ -39,6 +39,8 @@ Rails.application.configure do
 
   # Store uploaded files on the local file system in a temporary directory.
   config.active_storage.service = :test
+  # ファイル追加時は上書きではなく、追加とする
+  config.active_storage.replace_on_assign_to_many = false
 
   config.action_mailer.perform_caching = false
 
@@ -46,7 +48,7 @@ Rails.application.configure do
   # The :test delivery method accumulates sent emails in the
   # ActionMailer::Base.deliveries array.
   config.action_mailer.delivery_method = :test
-  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 } # TODO: 本番ではURLのホスト名に変更すること
+  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
 
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
@@ -60,3 +62,5 @@ Rails.application.configure do
   # システムエラー発生時のリダイレクト先のURL
   config.redirect_system_error_url = 'http://localhost:8888/signin'
 end
+
+Rails.application.routes.default_url_options = { host: 'localhost', port: 3000 }

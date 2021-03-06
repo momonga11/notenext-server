@@ -53,7 +53,11 @@ class V1::ApplicationController < ActionController::API
   end
 
   def has_lock_version!(params, key)
-    raise ActionController::ParameterMissing, :lock_version if !params.key?(key) || !params[key].key?(:lock_version)
+    if key
+      raise ActionController::ParameterMissing, :lock_version if !params.key?(key) || !params[key].key?(:lock_version)
+    elsif !params.key?(:lock_version)
+      raise ActionController::ParameterMissing, :lock_version
+    end
   end
 
   def resource_data_with_avatar(response_data, user)

@@ -229,7 +229,7 @@ RSpec.describe 'Notes', type: :request do
       end
 
       context '認証されている場合' do
-        it 'ユーザーが所属しているプロジェクトの場合はノートが取得できる' do
+        it 'ユーザ-が所属さているプロジェクトの場合はノートが取得でする' do
           get v1_project_note_path(
             project_id: user.projects[0].id,
             id: note.id
@@ -431,18 +431,49 @@ RSpec.describe 'Notes', type: :request do
     end
 
     context '認証されている場合' do
-      it 'ユーザーが所属するプロジェクトの場合はノートを削除できる' do
-        expect do
-          delete v1_project_folder_note_path(
-            project_id: user.projects[0].id,
-            folder_id: folder.id,
-            id: note.id
-          ), headers: auth_headers
-        end.to change(folder.notes, :count).by(-1)
-        expect(response.status).to eq(200)
+      context 'ユーザーが所属するプロジェクトの場合' do
+        it 'ノートを削除できる' do
+          expect do
+            delete v1_project_folder_note_path(
+              project_id: user.projects[0].id,
+              folder_id: folder.id,
+              id: note.id
+            ), headers: auth_headers
+          end.to change(folder.notes, :count).by(-1)
+          expect(response.status).to eq(200)
+        end
+
+        context '画像ファイルが添付されていた場合' do
+          let(:image_attribute) do
+            image_encoded = Base64.encode64(IO.read('spec/fixtures/neko_test.jpg'))
+            { data: "data:image/jpeg;base64,#{image_encoded}", filename: 'neko_test.jpg' }
+          end
+
+          before do
+            put v1_project_note_image_attach_path(
+              project_id: user.projects[0].id,
+              id: note.id
+            ), params: { note: { lock_version: note.lock_version, images: image_attribute } },
+               headers: auth_headers
+          end
+
+          it 'ノートを削除すると画像ファイルも削除される' do
+            expect(note.images.attached?).to be_truthy
+            expect do
+              delete v1_project_folder_note_path(
+                project_id: user.projects[0].id,
+                folder_id: folder.id,
+                id: note.id
+              ), headers: auth_headers
+            end.to change(folder.notes, :count).by(-1)
+
+            expect(response.status).to eq(200)
+            expect(note.images.attached?).to be_falsey
+          end
+        end
       end
 
-      it 'ユーザーが所属しないプロジェクトの場合はノートを削除できない' do
+      it 'ユーザーが所属しているプロジェクトの場合はノートを削除できない' do
         expect do
           delete v1_project_folder_note_path(
             project_id: user_dummy.projects[0].id,
@@ -474,6 +505,70 @@ RSpec.describe 'Notes', type: :request do
             ), headers: auth_headers
           end.to change(folder.notes, :count).by(0)
           expect(response.status).to eq(404)
+        end
+      end
+    end
+  end
+
+  describe 'PUT #attach_image' do
+    let(:image_attribute) do
+      image_encoded = Base64.encode64(IO.read('spec/fixtures/neko_test.jpg'))
+      { data: "data:image/jpeg;base64,#{image_encoded}", filename: 'neko_test.jpg' }
+    end
+
+    it '認証されていない場合は更新できない' do
+      auth_headers['access-token'] = '12345'
+      put v1_project_note_image_attach_path(
+        project_id: user.projects[0].id,
+        id: note.id
+      ), params: { note: { lock_version: note.lock_version, images: image_attribute } },
+         headers: auth_headers
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    context '認証されている場合' do
+      context 'ユーザーが所属しているプロジェクトの場合' do
+        it '画像を追加できる' do
+          put v1_project_note_image_attach_path(
+            project_id: user.projects[0].id,
+            id: note.id
+          ), params: { note: { lock_version: note.lock_version, images: image_attribute } },
+             headers: auth_headers
+
+          expect(response.status).to eq(200)
+          expect(Note.find(note.id).images.attached?).to be_truthy
+        end
+      end
+
+      context 'ユーザーが所属していないプロジェクトの場合' do
+        it '画像を追加できない' do
+          put v1_project_note_image_attach_path(
+            project_id: user_dummy.projects[0].id,
+            id: note_dummy.id
+          ), params: { note: { lock_version: note_dummy.lock_version, images: image_attribute } },
+             headers: auth_headers
+          expect(response).to have_http_status(:forbidden)
+          expect(Note.find(note_dummy.id).images.attached?).to be_falsey
+        end
+      end
+
+      context 'パラメーターが異常値の場合' do
+        it '更新できない' do
+          put v1_project_note_image_attach_path(
+            project_id: user.projects[0].id,
+            id: note.id
+          ), params: { test: 'test' },
+             headers: auth_headers
+          expect(response).to have_http_status(:bad_request)
+        end
+
+        it '存在しないノートIDの場合は更新できない' do
+          put v1_project_note_image_attach_path(
+            project_id: user.projects[0].id,
+            id: -1
+          ), params: { note: { lock_version: note.lock_version, images: image_attribute } },
+             headers: auth_headers
+          expect(response).to have_http_status(:not_found)
         end
       end
     end
