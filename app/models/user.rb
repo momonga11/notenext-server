@@ -20,9 +20,10 @@ class User < ActiveRecord::Base
   validate :avatar_size, on: %i[update create], if: :avatar_attached?
   validate :avatar_type, on: %i[update create], if: :avatar_attached?
 
+  private
+
   after_destroy do |user|
-    # なぜかuserは明示的にpurgeが必要
-    user.avatar.purge if user.avatar.attached?
+    user.avatar = nil if user.avatar.attached?
   end
 
   def avatar_size

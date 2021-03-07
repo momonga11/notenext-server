@@ -10,6 +10,10 @@ class Note < ApplicationRecord
 
   private
 
+  after_destroy do |note|
+    note.images = nil if note.images.attached?
+  end
+
   def image_size
     image = get_attached_image
     return unless image
