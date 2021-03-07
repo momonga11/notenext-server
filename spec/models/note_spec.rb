@@ -107,7 +107,7 @@ RSpec.describe Note, type: :model do
         note.update(images: images)
 
         image = note.images.sort_by { |image| image.id }.reverse[0]
-        url = Rails.application.routes.url_helpers.rails_representation_url(image.variant({}))
+        url = Rails.application.routes.url_helpers.url_for(image)
         "<img src=\"#{url}\">"
       end
 
@@ -118,7 +118,7 @@ RSpec.describe Note, type: :model do
         note.update(images: images2)
 
         image = note.images.sort_by { |image| image.id }.reverse[0]
-        url = Rails.application.routes.url_helpers.rails_representation_url(image.variant({}))
+        url = Rails.application.routes.url_helpers.url_for(image)
         "<img src=\"#{url}\">"
       end
 
