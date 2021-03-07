@@ -56,9 +56,6 @@ group :development, :test do
   gem 'pry-rails'
   gem 'pry-byebug'
 
-  # Test関連
-  gem 'shoulda-matchers', '~> 4.0'
-
   # N+1問題を検知するgem
   gem 'bullet'
 end
@@ -72,8 +69,14 @@ group :development do
   # Debug関連
   gem "ruby-debug-ide"
   gem "debase"
+end
+
+group :test do
+  # database_cleaner
+  gem 'database_cleaner'
 
   # Test関連
   gem 'spring-commands-rspec'
   gem 'rubocop-rspec', require: false
+  gem 'shoulda-matchers', '~> 4.0'
 end

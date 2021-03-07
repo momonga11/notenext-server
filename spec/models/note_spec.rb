@@ -53,7 +53,6 @@ RSpec.describe Note, type: :model do
 
         it 'imagesは複数追加できること' do
           expect do
-            sleep(1) # DBのロールバックが追いつかないのか、ここで時間をおかないと後続テストでエラーが出るため、待機する
             note.update(images: images)
           end.to change(note.images, :count).by(1)
         end
@@ -69,7 +68,6 @@ RSpec.describe Note, type: :model do
           end
 
           it 'imagesのサイズが最大サイズ以上の場合、エラーとなること' do
-            sleep(1) # DBのロールバックが追いつかないのか、ここで時間をおかないと後続テストでエラーが出るため、待機する
             note.update(images: images)
             expect(note.errors[:images]).to include('のサイズは0MB以下にしてください')
           end
@@ -86,7 +84,6 @@ RSpec.describe Note, type: :model do
           end
 
           it 'imagesの形式が許容されている拡張子以外の場合、エラーとなること' do
-            sleep(1) # DBのロールバックが追いつかないのか、ここで時間をおかな��と後続テストでエラーが出るため、待機する
             note.update(images: images)
             expect(note.errors[:images]).to include('にはjpegまたはpng形式のファイルを選択してください')
           end
@@ -100,7 +97,6 @@ RSpec.describe Note, type: :model do
       end
 
       it 'noteを削除すると、imagesのファイルも削除されること' do
-        sleep(1) # DBのロールバックが追いつかないのか、ここで時間をおかないと後続テストでエラーが出るため、待機する
         expect(note.destroy).to be_truthy
         expect(note.images.attached?).to be_falsey
       end

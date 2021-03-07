@@ -11,7 +11,7 @@ class Project < ApplicationRecord
 
   def over_upper_limit
     if users.length != 0 && UsersProject.exists?(user_id: users[0].id, is_owner: true)
-      errors[:base] << 'ユーザーが作成できるプロジェクト数の上限を越えているため、作成できません。'
+      errors.add(:base, 'ユーザーが作成できるプロジェクト数の上限を越えているため、作成できません。')
     end
   end
 end

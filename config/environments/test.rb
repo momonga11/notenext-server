@@ -60,7 +60,10 @@ Rails.application.configure do
   config.autoloader = :classic
 
   # システムエラー発生時のリダイレクト先のURL
-  config.redirect_system_error_url = 'http://localhost:8888/signin'
+  config.redirect_system_error_url = 'http://localhost:8888/systemerror'
+
+  # TestにてDB Rollbackによるエラーが発生するのを防ぐ
+  config.active_job.queue_adapter = :inline
 end
 
 Rails.application.routes.default_url_options = { host: 'localhost', port: 3000 }

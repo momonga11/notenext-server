@@ -76,6 +76,17 @@ RSpec.configure do |config|
       Bullet.end_request
     end
   end
+
+  config.before(:suite) do
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.clean_with(:truncation)
+  end
+
+  config.around do |example|
+    DatabaseCleaner.cleaning do
+      example.run
+    end
+  end
 end
 
 Shoulda::Matchers.configure do |config|

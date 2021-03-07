@@ -74,7 +74,6 @@ RSpec.describe User, type: :model do
       end
 
       it 'userを削除すると、avatarのファイルも削除されること' do
-        sleep(1) # DBのロールバックが追いつかないのか、ここで時間をおかないと後続テストでエラーが出るため、待機する
         expect(user.destroy).to be_truthy
         expect(user.avatar.attached?).to be_falsey
       end
