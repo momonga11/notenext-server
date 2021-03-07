@@ -65,5 +65,8 @@ module Notenext
     config.type_upload_image_file = %('image/jpeg image/png')
 
     config.sample_user_password = ENV['SAMPLE_USER_PASSWORD']
+
+    # ActiveStorage::Blobのエラー対策のため
+    config.middleware.use ActionDispatch::Flash
   end
 end

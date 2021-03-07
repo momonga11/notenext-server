@@ -56,8 +56,8 @@ class Note < ApplicationRecord
         next
       end
 
-      # 恒久的なURLを取得し、srcと比較する
-      url = Rails.application.routes.url_helpers.rails_representation_url(image.variant({}))
+      # URLを取得し、srcと比較する
+      url = Rails.application.routes.url_helpers.url_for(image)
       if imgs_src.select { |src| src == url }.present?
         # 存在が確認できたため、比較対象から除外する
         imgs_src.delete(url)

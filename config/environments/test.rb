@@ -39,6 +39,9 @@ Rails.application.configure do
   # ファイル追加時は上書きではなく、追加とする
   config.active_storage.replace_on_assign_to_many = false
 
+  # 画像をCDN経由で取得するようにする
+  config.active_storage.resolve_model_to_route = :cdn_proxy
+
   config.action_mailer.perform_caching = false
 
   # Tell Action Mailer not to deliver emails to the real world.
