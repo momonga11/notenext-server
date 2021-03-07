@@ -35,7 +35,6 @@ class V1::ProjectsController < V1::ApplicationController
 
   # PATCH/PUT /projects/1
   def update
-    # sleep 2
     has_lock_version!(params, :project)
 
     if @project.update(project_params)

@@ -438,7 +438,7 @@ RSpec.describe 'Users', type: :request do
     end
 
     # Dummy Comment For Formatter Error
-    context 'ログインに指定回数失敗した場合' do
+    context 'ログインに規定回数失敗し��場合' do
       before do
         user.password = 'bad-Password'
 
@@ -727,20 +727,23 @@ RSpec.describe 'Users', type: :request do
       it 'リダイレクトできる' do
         get v1_auth_confirmation_path, params: { confirmation_token: @confirmation_token }
         expect(response).to have_http_status(:found)
+        expect(response.body).to include(DeviseTokenAuth.default_confirm_success_url)
       end
     end
 
     context 'parameterが存在しない場合' do
-      it 'リダイレクトできない' do
+      it '異常用画面にリダイレクトする' do
         get v1_auth_confirmation_path
-        expect(response).to have_http_status(:bad_request)
+        expect(response).to have_http_status(:found)
+        expect(response.body).to include(Rails.application.config.redirect_system_error_url)
       end
     end
 
     context 'parameterが誤っている場合' do
-      it 'リダイレクトできない' do
+      it '異常用画面にリダイレクトする' do
         get v1_auth_confirmation_path, params: { test: 'test' }
-        expect(response).to have_http_status(:bad_request)
+        expect(response).to have_http_status(:found)
+        expect(response.body).to include(Rails.application.config.redirect_system_error_url)
       end
     end
   end

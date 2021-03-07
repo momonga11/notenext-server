@@ -69,13 +69,9 @@ class V1::NotesController < V1::ApplicationController
     has_lock_version!(note_image_params, nil)
 
     if @note.update(note_image_params)
-
       image = @note.images.sort_by { |image| image.id }.reverse[0]
 
-      # 恒久的なURLを取得する
-      url = rails_representation_url(image.variant({}).processed)
-
-      response_success_request({ id: @note.id, image_url: url, lock_version: @note.lock_version })
+      response_success_request({ id: @note.id, image_url: url_for(image), lock_version: @note.lock_version })
     else
       response_unprocessable_entity(@note)
     end

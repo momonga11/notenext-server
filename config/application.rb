@@ -25,10 +25,13 @@ module Notenext
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 6.0
 
-    # Settings in config/environments/* take precedence over those specified here.
-    # Application configuration can go into files in config/initializers
-    # -- all .rb files in that directory are automatically loaded after loading
-    # the framework and any gems in your application.
+    # Configuration for the application, engines, and railties goes here.
+    #
+    # These settings can be overridden in specific environments using the files
+    # in config/environments, which are processed later.
+    #
+    config.time_zone = 'Tokyo'
+    # config.eager_load_paths << Rails.root.join("extras")
 
     # Only loads a smaller set of middleware suitable for API only apps.
     # Middleware like session, flash, cookies can be added back manually.
@@ -53,7 +56,6 @@ module Notenext
     end
 
     # タイムゾーン設定
-    config.time_zone = 'Tokyo'
     config.active_record.default_timezone = :local
 
     # 画像ファイルアップロード最大サイズ(MB)
@@ -63,5 +65,8 @@ module Notenext
     config.type_upload_image_file = %('image/jpeg image/png')
 
     config.sample_user_password = ENV['SAMPLE_USER_PASSWORD']
+
+    # ActiveStorage::Blobのエラー対策のため
+    config.middleware.use ActionDispatch::Flash
   end
 end
