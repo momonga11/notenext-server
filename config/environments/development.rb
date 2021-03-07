@@ -74,9 +74,6 @@ Rails.application.configure do
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
-  # Active Storageのattachにて発生するエラー対策 TODO: 不要かも？
-  config.autoloader = :classic
-
   # システムエラー発生時のリダイレクト先のURL
   config.redirect_system_error_url = 'http://localhost:8888/systemerror'
 

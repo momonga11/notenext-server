@@ -66,9 +66,6 @@ Rails.application.configure do
   # Annotate rendered view with file names.
   # config.action_view.annotate_rendered_view_with_filenames = true
 
-  # Active Storageのattachにて発生するエラー対策 TODO: 不要かも？
-  config.autoloader = :classic
-
   # TestにてDB Rollbackによるエラーが発生するのを防ぐ
   config.active_job.queue_adapter = :inline
 
