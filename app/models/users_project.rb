@@ -1,5 +1,5 @@
 class UsersProject < ApplicationRecord
-  self.primary_keys = :user_id, :project_id
+  # self.primary_keys = :user_id, :project_id
   belongs_to :user
   belongs_to :project
   before_create :set_is_owner
