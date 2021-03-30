@@ -49,6 +49,7 @@ services:
     volumes:
       - web-log-prod:/var/log/nginx
       - app-tmp-prod:/app/tmp
+      - app-storage-prod:/app/storage
     depends_on:
       - app
   smtp:
@@ -61,3 +62,4 @@ volumes:
   web-log-prod:
   app-log-prod:
   app-tmp-prod:
+  app-storage-prod:
