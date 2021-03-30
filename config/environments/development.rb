@@ -43,11 +43,26 @@ Rails.application.configure do
 
   # mailer setting
   # 開発用メールサーバー
-  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 } # TODO: 本番ではURLのホスト名に変更すること
+  # TODO: 本番ではURLのホスト名に変更すること
+  config.action_mailer.default_url_options = {
+    host: ENV.fetch('MAILER_DEFAULT_URL_HOST') do
+      'localhost'
+    end,
+    port: ENV.fetch('MAILER_DEFAULT_URL_PORT') do
+      '3000'
+    end
+  }
 
   config.action_mailer.delivery_method = :smtp
 
-  config.action_mailer.smtp_settings = { address: '127.0.0.1', port: 1025 }
+  config.action_mailer.smtp_settings = {
+    address: ENV.fetch('MAILER_SMTP_ADDRESS') do
+      'localhost'
+    end,
+    port: ENV.fetch('MAILER_SMTP_PORT') do
+      '1025'
+    end
+  }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
@@ -75,7 +90,7 @@ Rails.application.configure do
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   # システムエラー発生時のリダイレクト先のURL
-  config.redirect_system_error_url = 'http://localhost:8888/systemerror'
+  config.redirect_system_error_url = ENV.fetch('REDIRECT_SYSTEM_ERROR_URL') { 'http://localhost:8888/systemerror' }
 
   config.after_initialize do
     Bullet.enable        = true
@@ -91,5 +106,11 @@ Rails.application.configure do
   # config.action_cable.disable_request_forgery_protection = true
 end
 
-# 画像のURL生成用
-Rails.application.routes.default_url_options = { host: 'localhost', port: 3000 }
+Rails.application.routes.default_url_options = {
+  host: ENV.fetch('HOST_DEFAULT_URL_HOST') do
+    'localhost'
+  end,
+  port: ENV.fetch('HOST_DEFAULT_URL_PORT') do
+    '3000'
+  end
+}

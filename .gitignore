@@ -27,7 +27,7 @@
 /config/master.key
 
 # Ignore dotenv config.
-.env
+.env*
 
 # Ignore rspec config.
 .rspec

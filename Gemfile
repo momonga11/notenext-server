@@ -33,8 +33,7 @@ gem 'dotenv-rails'
 
 # devise関連
 gem 'devise'
-# masterブランチで改修されているバグがあるので指定する
-gem 'devise_token_auth', :git => 'git://github.com/lynndylanhurley/devise_token_auth.git'
+gem 'devise_token_auth'
 gem 'devise-i18n'
 
 # シリアライズ関連

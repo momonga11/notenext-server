@@ -40,7 +40,7 @@ Rails.application.routes.draw do
   end
 
   direct :cdn_proxy do |model, options|
-    cdn_options = if Rails.env.development?
+    cdn_options = if Rails.env.development? || !ENV['CDN_URL']
                     Rails.application.routes.default_url_options
                   else
                     {
