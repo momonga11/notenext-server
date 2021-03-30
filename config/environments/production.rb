@@ -129,7 +129,7 @@ Rails.application.configure do
   # config.active_record.database_resolver_context = ActiveRecord::Middleware::DatabaseSelector::Resolver::Session
 
   # システムエラー発生時のリダイレクト先のURL
-  config.redirect_system_error_url = ENV.fetch('REDIRECT_SYSTEM_ERROR_URL') { 'http://localhost:8888/systemerror' }
+  config.redirect_system_error_url = "#{ENV.fetch('FRONT_SERVER_ORIGIN', 'http://localhost')}/systemerror"
 end
 
 Rails.application.routes.default_url_options = {

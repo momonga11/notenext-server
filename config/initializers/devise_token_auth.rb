@@ -58,11 +58,11 @@ DeviseTokenAuth.setup do |config|
   # send email, set it to true. (This is a setting for compatibility)
   config.send_confirmation_email = true
 
-  if Rails.env.development?
-    config.default_confirm_success_url = 'http://localhost:8888/signin'
-    config.default_password_reset_url = 'http://localhost:8888/changepassword'
-  else
+  if Rails.env.test?
     config.default_confirm_success_url = 'http://test-confirm.dev'
     config.default_password_reset_url = 'http://test-password-reset.dev'
+  else
+    config.default_confirm_success_url = "#{ENV.fetch('FRONT_SERVER_ORIGIN', 'http://localhost')}/signin"
+    config.default_password_reset_url = "#{ENV.fetch('FRONT_SERVER_ORIGIN', 'http://localhost')}/changepassword"
   end
 end

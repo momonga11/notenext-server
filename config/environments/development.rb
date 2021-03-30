@@ -90,7 +90,7 @@ Rails.application.configure do
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   # システムエラー発生時のリダイレクト先のURL
-  config.redirect_system_error_url = ENV.fetch('REDIRECT_SYSTEM_ERROR_URL') { 'http://localhost:8888/systemerror' }
+  config.redirect_system_error_url = "#{ENV.fetch('FRONT_SERVER_ORIGIN', 'http://localhost')}/systemerror"
 
   config.after_initialize do
     Bullet.enable        = true
