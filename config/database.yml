@@ -15,8 +15,8 @@ default: &default
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
 develop: &develop
-  host: <%= ENV.fetch("DATABASE_DEV_HOST") { localhost } %>
-  username: <%= ENV.fetch("DATABASE_DEV_USER") { root } %>
+  host: <%= ENV.fetch("DATABASE_DEV_HOST") { 'localhost' } %>
+  username: <%= ENV.fetch("DATABASE_DEV_USER") { 'root' } %>
   password: <%= ENV.fetch("DATABASE_DEV_PASSWORD") { ENV['DATABASE_ROOT_PASSWORD'] } %>
 
 development:

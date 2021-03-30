@@ -30,11 +30,11 @@ services:
       MAILER_DEFAULT_URL_PORT: ${MAILER_DEFAULT_URL_PORT:-9001}
       MAILER_SMTP_ADDRESS: ${MAILER_SMTP_ADDRESS:-smtp}
       MAILER_SMTP_PORT: ${MAILER_SMTP_PORT:-1025}
-      REDIRECT_SYSTEM_ERROR_URL: ${REDIRECT_SYSTEM_ERROR_URL:-http://localhost/systemerror}
+      FRONT_SERVER_ORIGIN: ${FRONT_SERVER_ORIGIN:-http://localhost}
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec puma"
     volumes:
-      - app-log:/app/log
-      - app-tmp:/app/tmp
+      - app-log-prod:/app/log
+      - app-tmp-prod:/app/tmp
     depends_on:
       - db
     tty: true
@@ -47,8 +47,8 @@ services:
     ports:
       - ${NGINX_PORT:-9001}:80
     volumes:
-      - web-log:/var/log/nginx
-      - app-tmp:/app/tmp
+      - web-log-prod:/var/log/nginx
+      - app-tmp-prod:/app/tmp
     depends_on:
       - app
   smtp:
@@ -58,6 +58,6 @@ services:
       - "1025:1025"
 volumes:
   db-store-prod:
-  web-log:
-  app-log:
-  app-tmp:
+  web-log-prod:
+  app-log-prod:
+  app-tmp-prod:
