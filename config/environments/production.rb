@@ -28,7 +28,7 @@ Rails.application.configure do
 
   # Specifies the header that your server uses for sending files.
   # config.action_dispatch.x_sendfile_header = 'X-Sendfile' # for Apache
-  # config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for NGINX
+  config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for NGINX
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
@@ -38,6 +38,17 @@ Rails.application.configure do
 
   # 画像をCDN経由で取得するようにする
   config.active_storage.resolve_model_to_route = :cdn_proxy
+
+  # mailer setting
+  config.action_mailer.default_url_options = {
+    host: ENV.fetch('MAILER_DEFAULT_URL_HOST'),
+    port: ENV.fetch('MAILER_DEFAULT_URL_PORT')
+  }
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address: ENV.fetch('MAILER_SMTP_ADDRESS'),
+    port: ENV.fetch('MAILER_SMTP_PORT')
+  }
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
@@ -118,14 +129,10 @@ Rails.application.configure do
   # config.active_record.database_resolver_context = ActiveRecord::Middleware::DatabaseSelector::Resolver::Session
 
   # システムエラー発生時のリダイレクト先のURL
-  config.redirect_system_error_url = 'http://localhost:8888/signin'
-
-  config.after_initialize do
-    Bullet.enable = true
-    Bullet.bullet_logger = true
-    Bullet.raise = true # raise an error if n+1 query occurs
-  end
+  config.redirect_system_error_url = ENV.fetch('REDIRECT_SYSTEM_ERROR_URL') { 'http://localhost:8888/systemerror' }
 end
 
-# 画像のURL生成用 TODO:本番ではいらない？
-Rails.application.routes.default_url_options = { host: 'localhost', port: 3000 }
+Rails.application.routes.default_url_options = {
+  host: ENV.fetch('HOST_DEFAULT_URL_HOST'),
+  port: ENV.fetch('HOST_DEFAULT_URL_PORT')
+}

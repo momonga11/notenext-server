@@ -47,9 +47,16 @@ Rails.application.configure do
   # Tell Action Mailer not to deliver emails to the real world.
   # The :test delivery method accumulates sent emails in the
   # ActionMailer::Base.deliveries array.
-  config.action_mailer.delivery_method = :test
+  config.action_mailer.default_url_options = {
+    host: ENV.fetch('MAILER_DEFAULT_URL_HOST') do
+      'localhost'
+    end,
+    port: ENV.fetch('MAILER_DEFAULT_URL_PORT') do
+      '3000'
+    end
+  }
 
-  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+  config.action_mailer.delivery_method = :test
 
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
@@ -70,7 +77,7 @@ Rails.application.configure do
   config.active_job.queue_adapter = :inline
 
   # システムエラー発生時のリダイレクト先のURL
-  config.redirect_system_error_url = 'http://localhost:8888/systemerror'
+  config.redirect_system_error_url = ENV.fetch('REDIRECT_SYSTEM_ERROR_URL') { 'http://localhost:8888/systemerror' }
 
   config.after_initialize do
     Bullet.enable        = true
@@ -79,4 +86,11 @@ Rails.application.configure do
   end
 end
 
-Rails.application.routes.default_url_options = { host: 'localhost', port: 3000 }
+Rails.application.routes.default_url_options = {
+  host: ENV.fetch('HOST_DEFAULT_URL_HOST') do
+    'localhost'
+  end,
+  port: ENV.fetch('HOST_DEFAULT_URL_PORT') do
+    '3000'
+  end
+}

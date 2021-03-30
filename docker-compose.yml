@@ -1,0 +1,63 @@
+version: "3"
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD:-password}
+      MYSQL_DATABASE: notenext_production
+      MYSQL_USER: ${DATABASE_PROD_USER:-notenext-user}
+      MYSQL_PASSWORD: ${DATABASE_PROD_PASSWORD:-Password1}
+      TZ: ${TZ:-Asia/Tokyo}
+    ports:
+      - ${MYSQL_PORT:-3308}:3306
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    volumes:
+      - db-store-prod:/var/lib/mysql
+  app:
+    build: .
+    environment:
+      RAILS_ENV: production
+      DATABASE_PROD_HOST: db
+      DATABASE_PROD_USER: ${DATABASE_PROD_USER:-notenext-user}
+      DATABASE_PROD_PASSWORD: ${DATABASE_PROD_PASSWORD:-Password1}
+      SAMPLE_USER_PASSWORD: ${SAMPLE_USER_PASSWORD:-Password}
+      TZ: ${TZ:-Asia/Tokyo}
+      HOST_DEFAULT_URL_HOST: ${HOST_DEFAULT_URL_HOST:-localhost}
+      HOST_DEFAULT_URL_PORT: ${HOST_DEFAULT_URL_PORT:-9001}
+      SENDER_EMAIL_ADDRESS: ${SENDER_EMAIL_ADDRESS:-testNoteNext@example.com}
+      MAILER_DEFAULT_URL_HOST: ${MAILER_DEFAULT_URL_HOST:-localhost}
+      MAILER_DEFAULT_URL_PORT: ${MAILER_DEFAULT_URL_PORT:-9001}
+      MAILER_SMTP_ADDRESS: ${MAILER_SMTP_ADDRESS:-smtp}
+      MAILER_SMTP_PORT: ${MAILER_SMTP_PORT:-1025}
+      REDIRECT_SYSTEM_ERROR_URL: ${REDIRECT_SYSTEM_ERROR_URL:-http://localhost/systemerror}
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec puma"
+    volumes:
+      - app-log:/app/log
+      - app-tmp:/app/tmp
+    depends_on:
+      - db
+    tty: true
+  web:
+    build:
+      context: ./nginx
+    environment:
+      SERVER_NAME: ${WEB_SERVER_NAME:-localhost}
+      REAL_IP_FROM: ${REAL_IP_FROM:-localhost}
+    ports:
+      - ${NGINX_PORT:-9001}:80
+    volumes:
+      - web-log:/var/log/nginx
+      - app-tmp:/app/tmp
+    depends_on:
+      - app
+  smtp:
+    image: schickling/mailcatcher
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+volumes:
+  db-store-prod:
+  web-log:
+  app-log:
+  app-tmp:
