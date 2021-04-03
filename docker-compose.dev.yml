@@ -12,7 +12,10 @@ services:
     volumes:
       - db-store:/var/lib/mysql
   app:
-    build: .
+    build:
+      context: .
+      args:
+        env: development
     environment:
       DATABASE_DEV_HOST: db
       DATABASE_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD:-password}

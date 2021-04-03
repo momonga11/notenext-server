@@ -15,7 +15,10 @@ services:
     volumes:
       - db-store-prod:/var/lib/mysql
   app:
-    build: .
+    build:
+      context: .
+      args:
+        env: production
     environment:
       RAILS_ENV: production
       DATABASE_PROD_HOST: db
@@ -35,6 +38,7 @@ services:
     volumes:
       - app-log-prod:/app/log
       - app-tmp-prod:/app/tmp
+      - app-storage-prod:/app/storage
     depends_on:
       - db
     tty: true
@@ -49,7 +53,6 @@ services:
     volumes:
       - web-log-prod:/var/log/nginx
       - app-tmp-prod:/app/tmp
-      - app-storage-prod:/app/storage
     depends_on:
       - app
   smtp:

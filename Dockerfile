@@ -6,7 +6,12 @@ RUN apt-get update -qq \
 WORKDIR /app
 COPY Gemfile /app/Gemfile
 COPY Gemfile.lock /app/Gemfile.lock
-RUN bundle install
+ARG env
+RUN if [ "${env}" = "production" ]; then \
+  bundle install --without test development; \
+  else \
+  bundle install; \
+  fi
 COPY . /app
 
 COPY entrypoint.sh /usr/bin/
