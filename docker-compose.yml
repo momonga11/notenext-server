@@ -9,7 +9,7 @@ services:
       MYSQL_PASSWORD: ${DATABASE_PROD_PASSWORD:-Password1}
       TZ: ${TZ:-Asia/Tokyo}
     ports:
-      - ${MYSQL_PORT:-3308}:3306
+      - ${MYSQL_PORT:-3306}:3306
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     volumes:
@@ -23,7 +23,7 @@ services:
       DATABASE_PROD_PASSWORD: ${DATABASE_PROD_PASSWORD:-Password1}
       SAMPLE_USER_PASSWORD: ${SAMPLE_USER_PASSWORD:-Password}
       TZ: ${TZ:-Asia/Tokyo}
-      HOST_DEFAULT_URL_HOST: ${HOST_DEFAULT_URL_HOST:-localhost}
+      HOST_DEFAULT_URL_HOST: ${HOST_DEFAULT_URL_HOST:-localhost} # ActiveStorageのURLに必要
       HOST_DEFAULT_URL_PORT: ${HOST_DEFAULT_URL_PORT:-9001}
       SENDER_EMAIL_ADDRESS: ${SENDER_EMAIL_ADDRESS:-testNoteNext@example.com}
       MAILER_DEFAULT_URL_HOST: ${MAILER_DEFAULT_URL_HOST:-localhost}
