@@ -40,15 +40,37 @@ Rails.application.configure do
   config.active_storage.resolve_model_to_route = :cdn_proxy
 
   # mailer setting
-  config.action_mailer.default_url_options = {
-    host: ENV.fetch('MAILER_DEFAULT_URL_HOST'),
-    port: ENV.fetch('MAILER_DEFAULT_URL_PORT')
-  }
+  config.action_mailer.default_url_options = if ENV['HOST_PROTOCOL_HTTPS'].present?
+                                               {
+                                                 host: ENV.fetch('HOST_DEFAULT_URL_HOST'),
+                                                 port: ENV.fetch('HOST_DEFAULT_URL_PORT') { '' }
+                                                 protocol: 'https'
+                                               }
+                                             else
+                                               {
+                                                 host: ENV.fetch('HOST_DEFAULT_URL_HOST'),
+                                                 port: ENV.fetch('HOST_DEFAULT_URL_PORT') { '' }
+                                               }
+                                             end
+
   config.action_mailer.delivery_method = :smtp
-  config.action_mailer.smtp_settings = {
-    address: ENV.fetch('MAILER_SMTP_ADDRESS'),
-    port: ENV.fetch('MAILER_SMTP_PORT')
-  }
+
+  config.action_mailer.smtp_settings = if ENV['MAILER_SMTP_PASSWORD'].present?
+                                         {
+                                           user_name: ENV['MAILER_SMTP_USER_NAME'],
+                                           password: ENV['MAILER_SMTP_PASSWORD'],
+                                           domain: ENV['MAILER_SMTP_DOMAIN'],
+                                           address: ENV['MAILER_SMTP_ADDRESS'],
+                                           port: ENV['MAILER_SMTP_PORT'],
+                                           authentication: :plain,
+                                           enable_starttls_auto: true
+                                         }
+                                       else
+                                         {
+                                           address: ENV['MAILER_SMTP_ADDRESS'],
+                                           port: ENV['MAILER_SMTP_PORT']
+                                         }
+                                       end
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
@@ -134,5 +156,5 @@ end
 
 Rails.application.routes.default_url_options = {
   host: ENV.fetch('HOST_DEFAULT_URL_HOST'),
-  port: ENV.fetch('HOST_DEFAULT_URL_PORT')
+  port: ENV.fetch('HOST_DEFAULT_URL_PORT') { '' }
 }
