@@ -64,6 +64,7 @@ module Notenext
     # 画像ファイル 形式制限
     config.type_upload_image_file = %('image/jpeg image/png')
 
+    # サンプルユーザーの共通パスワード
     config.sample_user_password = ENV['SAMPLE_USER_PASSWORD']
 
     # ActiveStorage::Blobのエラー対策のため
