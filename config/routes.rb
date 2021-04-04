@@ -40,13 +40,13 @@ Rails.application.routes.draw do
   end
 
   direct :cdn_proxy do |model, options|
-    cdn_options = if Rails.env.development? || !ENV['CDN_URL']
+    cdn_options = if Rails.env.development? || !ENV['CDN_HOST'].present?
                     Rails.application.routes.default_url_options
                   else
                     {
                       protocol: 'https',
                       port: 443,
-                      host: Rails.env.production? ? 'cdn.notenext.hogehoge.co.jp' : "#{Rails.env}.cdn.notenext.hogehoge.co.jp"
+                      host: Rails.env.production? ? ENV['CDN_HOST'] : "#{Rails.env}.#{ENV['CDN_HOST']}"
                     }
                   end
 
