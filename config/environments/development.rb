@@ -42,19 +42,18 @@ Rails.application.configure do
   config.action_mailer.perform_caching = false
 
   # mailer setting
-  # 開発用メールサーバー
-  # TODO: 本番ではURLのホスト名に変更すること
   config.action_mailer.default_url_options = {
-    host: ENV.fetch('MAILER_DEFAULT_URL_HOST') do
+    host: ENV.fetch('HOST_DEFAULT_URL_HOST') do
       'localhost'
     end,
-    port: ENV.fetch('MAILER_DEFAULT_URL_PORT') do
+    port: ENV.fetch('HOST_DEFAULT_URL_HOST') do
       '3000'
     end
   }
 
   config.action_mailer.delivery_method = :smtp
 
+  # 開発用メールサーバー
   config.action_mailer.smtp_settings = {
     address: ENV.fetch('MAILER_SMTP_ADDRESS') do
       'localhost'
