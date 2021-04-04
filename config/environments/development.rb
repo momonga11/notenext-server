@@ -87,7 +87,7 @@ Rails.application.configure do
 
   # Use an evented file watcher to asynchronously detect changes in source code,
   # routes, locales, etc. This feature depends on the listen gem.
-  config.file_watcher = ActiveSupport::EventedFileUpdateChecker
+  config.file_watcher = ActiveSupport::FileUpdateChecker
 
   # システムエラー発生時のリダイレクト先のURL
   config.redirect_system_error_url = "#{ENV.fetch('FRONT_SERVER_ORIGIN', 'http://localhost')}/systemerror"
