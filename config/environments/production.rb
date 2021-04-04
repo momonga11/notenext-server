@@ -31,7 +31,7 @@ Rails.application.configure do
   config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for NGINX
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  config.active_storage.service = ENV.fetch('ACTIVE_STORAGE_SERVICE') { :local }
 
   # ファイル追加時は上書きではなく、追加とする
   config.active_storage.replace_on_assign_to_many = false
