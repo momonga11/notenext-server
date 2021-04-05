@@ -1,6 +1,6 @@
 FROM ruby:2.7.2
 RUN apt-get update -qq \
-  && apt-get install -y --no-install-recommends default-mysql-client \
+  && apt-get install -y --no-install-recommends default-mysql-client=1.0.5 \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
