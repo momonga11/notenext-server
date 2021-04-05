@@ -43,7 +43,7 @@ Rails.application.configure do
   config.action_mailer.default_url_options = if ENV['HOST_PROTOCOL_HTTPS'].present?
                                                {
                                                  host: ENV.fetch('HOST_DEFAULT_URL_HOST'),
-                                                 port: ENV.fetch('HOST_DEFAULT_URL_PORT') { '' }
+                                                 port: ENV.fetch('HOST_DEFAULT_URL_PORT') { '' },
                                                  protocol: 'https'
                                                }
                                              else
