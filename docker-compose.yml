@@ -33,14 +33,13 @@ services:
       MAILER_SMTP_PORT: ${MAILER_SMTP_PORT:-1025}
       FRONT_SERVER_ORIGIN: ${FRONT_SERVER_ORIGIN:-http://localhost}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost} # 複数指定したい場合はカンマ区切りで設定してください
-    command: bash -c "rm -f tmp/pids/server.pid && bundle exec puma"
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec puma -C config/puma.rb"
     volumes:
       - app-log-prod:/app/log
       - app-tmp-prod:/app/tmp
       - app-storage-prod:/app/storage
     depends_on:
       - db
-    tty: true
   web:
     build:
       context: ./nginx

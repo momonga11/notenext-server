@@ -14,6 +14,8 @@ RUN if [ "${env}" = "production" ]; then \
   fi
 COPY . /app
 
+VOLUME /app/tmp
+
 COPY entrypoint.sh /usr/bin/
 RUN chmod +x /usr/bin/entrypoint.sh
 ENTRYPOINT ["entrypoint.sh"]
