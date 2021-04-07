@@ -14,7 +14,7 @@ server {
 
 server {
   listen 80;
-  server_name ${SERVER_NAME};
+  server_name ${WEB_SERVER_NAME};
   set_real_ip_from ${REAL_IP_FROM};    # 信頼できるアドレス空間を指定(本番ではVPC）。X-Forwarded-Forは偽装可能なので、ここで指定したIPアドレス以外からは書き換えを行わないようにする。
   real_ip_header X-Forwarded-For;    # remote_addrを書き換え。set_real_ip_fromから一番最後のIPアドレスをクライアントIPと判定する。
   # TODO :cloudFlontの考慮
