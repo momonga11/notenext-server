@@ -168,6 +168,7 @@ GEM
     nokogiri (1.11.2)
       mini_portile2 (~> 2.5.0)
       racc (~> 1.4)
+    okcomputer (1.18.4)
     orm_adapter (0.5.0)
     parallel (1.20.1)
     parser (3.0.0.0)
@@ -323,6 +324,7 @@ DEPENDENCIES
   image_processing
   listen
   mysql2
+  okcomputer
   pry-byebug
   pry-rails
   puma

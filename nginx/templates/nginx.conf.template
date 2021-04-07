@@ -3,14 +3,14 @@ upstream app {
  }
 
 # ALBのヘルスチェック用
-# server {
-#   listen 80 default_server;
-#   server_name _;
+server {
+  listen 80 default_server;
+  server_name _;
 
-#   location = / {
-#     proxy_pass http://app;
-#   }
-# }
+  location = /health_checks {
+    proxy_pass http://app;
+  }
+}
 
 server {
   listen 80;
