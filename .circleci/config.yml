@@ -1,15 +1,60 @@
 version: 2.1
-orbs:
-  ruby: circleci/ruby@0.1.2 
-
 jobs:
-  build:
+  build_and_test:
+    parallelism: 2
     docker:
-      - image: circleci/ruby:2.6.3-stretch-node
-    executor: ruby/default
+      - image: circleci/ruby:2.7.2
+        environment:
+          RAILS_ENV: test
+          DATABASE_DEV_HOST: 127.0.0.1
+          DATABASE_ROOT_PASSWORD: password
+          SAMPLE_USER_PASSWORD: password
+          TZ: Asia/Tokyo
+      - image: circleci/mysql:8.0-ram
+        environment:
+          MYSQL_ROOT_PASSWORD: password
+          TZ: Asia/Tokyo
+        command: mysqld --default-authentication-plugin=mysql_native_password
+    working_directory: ~/app
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - rails-bundle-v1-{{ checksum "Gemfile.lock" }}
+            - rails-bundle-v1-
       - run:
-          name: Which bundler?
-          command: bundle -v
-      - ruby/bundle-install
+          name: 必要なパッケージのインストール
+          command: |
+            sudo apt-get update -qq \
+              && sudo apt-get install -y --no-install-recommends default-mysql-client \
+              && sudo apt-get clean \
+              && sudo rm -rf /var/lib/apt/lists/*
+      - run:
+          name: gem依存関係のインストール
+          command: bundle check || bundle install
+      - save_cache:
+          key: rails-bundle-v1-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+      - run:
+          name: データベースの起動を待機
+          command: |
+            dockerize -wait tcp://localhost:3306 -timeout 1m
+      - run:
+          name: データベースのセットアップ
+          command: bundle exec rake db:setup
+      # - run:  TODO: 現在Lint実行結果がエラーとなるので、いったんコメントアウトする
+      #     name: Lintツール(rubocop)を実行
+      #     command: |
+      #       bundle exec rubocop
+      - run:
+          name: 並列にテストを実行
+          command: |
+            bundle exec rspec --format RspecJunitFormatter \
+                              --out test_results/rspec.xml \
+                              $(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build_and_test

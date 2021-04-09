@@ -19,7 +19,7 @@ services:
     environment:
       DATABASE_DEV_HOST: db
       DATABASE_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD:-password}
-      SAMPLE_USER_PASSWORD: ${SAMPLE_USER_PASSWORD:-Password}
+      SAMPLE_USER_PASSWORD: ${SAMPLE_USER_PASSWORD:-password}
       TZ: ${TZ:-Asia/Tokyo}
       PORT: ${PORT:-3000}
       HOST_DEFAULT_URL_HOST: ${HOST_DEFAULT_URL_HOST:-localhost}

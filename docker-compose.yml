@@ -23,7 +23,7 @@ services:
       RAILS_ENV: production
       DATABASE_PROD_HOST: db
       DATABASE_PROD_USER: ${DATABASE_PROD_USER:-notenext-user}
-      DATABASE_PROD_PASSWORD: ${DATABASE_PROD_PASSWORD:-Password1}
+      DATABASE_PROD_PASSWORD: ${DATABASE_PROD_PASSWORD:-password1}
       SAMPLE_USER_PASSWORD: ${SAMPLE_USER_PASSWORD:-Password}
       TZ: ${TZ:-Asia/Tokyo}
       HOST_DEFAULT_URL_HOST: ${HOST_DEFAULT_URL_HOST:-localhost} # メーラーにて利用するデフォルトURLや、CDNを利用しない場合のActiveStorageのURLに適用される
@@ -44,7 +44,7 @@ services:
     build:
       context: ./nginx
     environment:
-      SERVER_NAME: ${WEB_SERVER_NAME:-localhost}
+      WEB_SERVER_NAME: ${WEB_SERVER_NAME:-localhost}
       REAL_IP_FROM: ${REAL_IP_FROM:-localhost}
     ports:
       - ${NGINX_PORT:-9001}:80
