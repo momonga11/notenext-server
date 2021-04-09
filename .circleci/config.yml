@@ -1,7 +1,6 @@
 version: 2.1
 jobs:
   build_and_test:
-    parallelism: 2
     docker:
       - image: circleci/ruby:2.7.2
         environment:
@@ -48,11 +47,9 @@ jobs:
       #     command: |
       #       bundle exec rubocop
       - run:
-          name: 並列にテストを実行
+          name: テストを実行
           command: |
-            bundle exec rspec --format RspecJunitFormatter \
-                              --out test_results/rspec.xml \
-                              $(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
+            bundle exec rspec
 workflows:
   version: 2
   main:

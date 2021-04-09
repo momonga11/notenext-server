@@ -63,9 +63,6 @@ group :development, :test do
 
   # N+1問題を検知するgem
   gem 'bullet'
-
-  # rspecの結果をフォーマットするgem
-  gem 'rspec_junit_formatter'
 end
 
 group :development do
