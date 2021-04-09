@@ -44,7 +44,7 @@ services:
     build:
       context: ./nginx
     environment:
-      SERVER_NAME: ${WEB_SERVER_NAME:-localhost}
+      WEB_SERVER_NAME: ${WEB_SERVER_NAME:-localhost}
       REAL_IP_FROM: ${REAL_IP_FROM:-localhost}
     ports:
       - ${NGINX_PORT:-9001}:80
