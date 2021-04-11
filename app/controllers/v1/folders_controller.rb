@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# フォルダ情報を管理するクラス
 class V1::FoldersController < V1::ApplicationController
   before_action lambda {
     authenticate_project!(params[:project_id])
@@ -7,7 +10,6 @@ class V1::FoldersController < V1::ApplicationController
   # GET /folders
   def index
     @folders = @project.folders
-
     render json: @folders
   end
 

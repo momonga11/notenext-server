@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
@@ -43,24 +45,16 @@ Rails.application.configure do
 
   # mailer setting
   config.action_mailer.default_url_options = {
-    host: ENV.fetch('HOST_DEFAULT_URL_HOST') do
-      'localhost'
-    end,
-    port: ENV.fetch('HOST_DEFAULT_URL_HOST') do
-      '3000'
-    end
+    host: ENV.fetch('HOST_DEFAULT_URL_HOST', 'localhost'),
+    port: ENV.fetch('HOST_DEFAULT_URL_HOST', '3000')
   }
 
   config.action_mailer.delivery_method = :smtp
 
   # 開発用メールサーバー
   config.action_mailer.smtp_settings = {
-    address: ENV.fetch('MAILER_SMTP_ADDRESS') do
-      'localhost'
-    end,
-    port: ENV.fetch('MAILER_SMTP_PORT') do
-      '1025'
-    end
+    address: ENV.fetch('MAILER_SMTP_ADDRESS', 'localhost'),
+    port: ENV.fetch('MAILER_SMTP_PORT', '1025')
   }
 
   # Print deprecation notices to the Rails logger.
@@ -106,10 +100,6 @@ Rails.application.configure do
 end
 
 Rails.application.routes.default_url_options = {
-  host: ENV.fetch('HOST_DEFAULT_URL_HOST') do
-    'localhost'
-  end,
-  port: ENV.fetch('HOST_DEFAULT_URL_PORT') do
-    '3000'
-  end
+  host: ENV.fetch('HOST_DEFAULT_URL_HOST', 'localhost'),
+  port: ENV.fetch('HOST_DEFAULT_URL_PORT', '3000')
 }

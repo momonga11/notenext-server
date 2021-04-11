@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# ノート情報を管理するクラス
 class V1::NotesController < V1::ApplicationController
   before_action lambda {
     authenticate_project!(params[:project_id])
@@ -23,7 +26,7 @@ class V1::NotesController < V1::ApplicationController
 
   # GET /notes/1
   def show
-    if params[:folder_id].present? && !(@note.folder_id == params[:folder_id].to_i)
+    if params[:folder_id].present? && @note.folder_id != params[:folder_id].to_i
       response_not_found("#{Folder.model_name.human} (#{Note.primary_key} : #{params[:folder_id]}) ")
       return
     end
@@ -69,7 +72,7 @@ class V1::NotesController < V1::ApplicationController
     has_lock_version!(note_image_params, nil)
 
     if @note.update(note_image_params)
-      image = @note.images.sort_by { |image| image.id }.reverse[0]
+      image = @note.images.sort_by(&:id).reverse[0]
 
       response_success_request({ id: @note.id, image_url: url_for(image), lock_version: @note.lock_version })
     else

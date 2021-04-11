@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe 'Notes', type: :request do
@@ -21,12 +23,12 @@ RSpec.describe 'Notes', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
+    context 'when 認証されている' do
       let!(:note2) { FactoryBot.create(:note, project: user.projects[0], folder: folder) }
 
-      context 'ユーザーが所属しているプロジェクトの場合' do
-        context 'クエリパラメーターにwith_associationが存在する場合' do
-          subject do
+      context 'when ユーザーが所属しているプロジェクト' do
+        context 'when クエリパラメーターにwith_associationが存在する' do
+          subject :get_notes_with_association do
             get v1_project_folder_notes_path(
               project_id: user.projects[0].id,
               folder_id: folder_id
@@ -34,12 +36,12 @@ RSpec.describe 'Notes', type: :request do
             response
           end
 
-          context 'with_association=Trueの場合' do
+          context 'when with_association=True' do
             let(:with_association) { true }
             let(:folder_id) { note.folder.id }
 
             it 'ノート(複数)と紐づくフォルダ情報が取得できる' do
-              expect(subject).to have_http_status(:ok)
+              expect(get_notes_with_association).to have_http_status(:ok)
               expect(json_parse_body(response)[:notes].map { |note| note[:id] }).to eq folder.notes.ids
               expect(json_parse_body(response)[:notes].map { |note| note[:id] }.length).to eq 2
               expect(json_parse_body(response)[:id]).to eq folder.id
@@ -47,37 +49,37 @@ RSpec.describe 'Notes', type: :request do
               expect(json_parse_body(response)[:description]).to eq folder.description
             end
 
-            context 'フォルダIDが存在しない場合' do
+            context 'when フォルダIDが存在しない' do
               let(:folder_id) { -1 }
 
               it 'ノートは取得できない' do
-                expect(subject).to have_http_status(:not_found)
+                expect(get_notes_with_association).to have_http_status(:not_found)
               end
             end
           end
 
-          context 'with_association=Falseの場合' do
+          context 'when with_association=Falseの場合' do
             let(:with_association) { false }
             let(:folder_id) { note.folder.id }
 
             it 'ノートが取得できる(複数)' do
-              expect(subject).to have_http_status(:ok)
+              expect(get_notes_with_association).to have_http_status(:ok)
               expect(json_parse_body(response).map { |note| note[:id] }).to eq folder.notes.ids
               expect(json_parse_body(response).map { |note| note[:id] }.length).to eq 2
             end
 
-            context 'フォルダIDが存在しない場合' do
+            context 'when フォルダIDが存在しない場合' do
               let(:folder_id) { -1 }
 
               it 'ノートは取得できない' do
-                expect(subject).to have_http_status(:not_found)
+                expect(get_notes_with_association).to have_http_status(:not_found)
               end
             end
           end
         end
 
-        context 'クエリパラメーターにwith_associationが存在しない場合' do
-          subject do
+        context 'when クエリパラメーターにwith_associationが存在しない' do
+          subject(:get_notes) do
             get v1_project_folder_notes_path(
               project_id: user.projects[0].id,
               folder_id: folder_id
@@ -85,28 +87,28 @@ RSpec.describe 'Notes', type: :request do
             response
           end
 
-          context 'フォルダIDが存在する場合' do
+          context 'when フォルダIDが存在する' do
             let(:folder_id) { note.folder.id }
 
             it 'ノートが取得できる(複数)' do
-              expect(subject).to have_http_status(:ok)
+              expect(get_notes).to have_http_status(:ok)
               expect(json_parse_body(response).map { |note| note[:id] }).to eq folder.notes.ids
               expect(json_parse_body(response).map { |note| note[:id] }.length).to eq 2
             end
           end
 
-          context 'フォルダIDが存在しない場合' do
+          context 'when フォルダIDが存在しない場合' do
             let(:folder_id) { -1 }
 
             it 'ノートは取得できない' do
-              expect(subject).to have_http_status(:not_found)
+              expect(get_notes).to have_http_status(:not_found)
             end
           end
         end
       end
 
-      context 'ユーザーが所属していないプロジェクトの場合、ノートは取得できない' do
-        context 'クエリパラメーターにwith_associationが存在する場合' do
+      context 'when ユーザーが所属していないプロジェクトの' do
+        context 'when クエリパラメーターにwith_associationが存在する' do
           it 'ノートは取得できない' do
             get v1_project_folder_notes_path(
               project_id: user_dummy.projects[0].id,
@@ -116,7 +118,7 @@ RSpec.describe 'Notes', type: :request do
           end
         end
 
-        context 'クエリパラメーターにwith_associationが存在しない場合' do
+        context 'when クエリパラメーターにwith_associationが存在しない' do
           it 'ノートは取得できない' do
             get v1_project_folder_notes_path(
               project_id: user_dummy.projects[0].id,
@@ -142,8 +144,8 @@ RSpec.describe 'Notes', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
-      context 'ユーザーが所属しているプロジェクトの場合' do
+    context 'when 認証されている' do
+      context 'when ユーザーが所属しているプロジェクト' do
         it 'フォルダを跨いでノートが取得できる(複数)' do
           get v1_project_notes_path(
             project_id: note.project_id
@@ -156,7 +158,7 @@ RSpec.describe 'Notes', type: :request do
       end
     end
 
-    context 'ユーザーが所属していないプロジェクトの場合' do
+    context 'when ユーザーが所属していないプロジェクト' do
       it 'ノートが取得できない' do
         get v1_project_notes_path(
           project_id: user_dummy.projects[0].id
@@ -179,7 +181,7 @@ RSpec.describe 'Notes', type: :request do
         expect(response).to have_http_status(:unauthorized)
       end
 
-      context '認証されている場合' do
+      context 'when 認証されている' do
         it 'ユーザーが所属しているプロジェクトの場合はノートが取得できる' do
           get v1_project_folder_note_path(
             project_id: user.projects[0].id,
@@ -228,8 +230,8 @@ RSpec.describe 'Notes', type: :request do
         expect(response).to have_http_status(:unauthorized)
       end
 
-      context '認証されている場合' do
-        it 'ユーザ-が所属さているプロジェクトの場合はノートが取得でする' do
+      context 'when 認証されている' do
+        it 'ユーザ-が所属さているプロジェクトの場合、ノートが取得する' do
           get v1_project_note_path(
             project_id: user.projects[0].id,
             id: note.id
@@ -271,7 +273,7 @@ RSpec.describe 'Notes', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
+    context 'when 認証されている' do
       it 'ユーザーが所属しているプロジェクトの場合、ノートが作成できる' do
         expect do
           post v1_project_folder_notes_path(
@@ -305,7 +307,7 @@ RSpec.describe 'Notes', type: :request do
       end
 
       # Dummy Comment For Formatter Error
-      context 'パラメータが異常値の場合' do
+      context 'when パラメータが異常値' do
         it '作成できない' do
           expect do
             post v1_project_folder_notes_path(
@@ -334,7 +336,7 @@ RSpec.describe 'Notes', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
+    context 'when 認証されている' do
       it 'ユーザーが所属しているプロジェクトの場合、ノートが更新できる' do
         put v1_project_folder_note_path(
           project_id: user.projects[0].id,
@@ -367,7 +369,7 @@ RSpec.describe 'Notes', type: :request do
         expect(response).to have_http_status(:not_found)
       end
 
-      context 'パラメーターが異常値の場合' do
+      context 'when パラメーターが異常値' do
         it '更新できない' do
           put v1_project_folder_note_path(
             project_id: user.projects[0].id,
@@ -430,8 +432,8 @@ RSpec.describe 'Notes', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
-      context 'ユーザーが所属するプロジェクトの場合' do
+    context 'when 認証されている' do
+      context 'when ユーザーが所属するプロジェクト' do
         it 'ノートを削除できる' do
           expect do
             delete v1_project_folder_note_path(
@@ -443,7 +445,7 @@ RSpec.describe 'Notes', type: :request do
           expect(response.status).to eq(200)
         end
 
-        context '画像ファイルが添付されていた場合' do
+        context 'when 画像ファイルが添付されている' do
           let(:image_attribute) do
             image_encoded = Base64.encode64(IO.read('spec/fixtures/neko_test.jpg'))
             { data: "data:image/jpeg;base64,#{image_encoded}", filename: 'neko_test.jpg' }
@@ -457,8 +459,8 @@ RSpec.describe 'Notes', type: :request do
                headers: auth_headers
           end
 
-          it 'ノートを削除すると画像ファイルも削除される' do
-            expect(note.images.attached?).to be_truthy
+          it 'when ノートを削除すると画像ファイルも削除される' do
+            expect(note.images).to be_attached
             expect do
               delete v1_project_folder_note_path(
                 project_id: user.projects[0].id,
@@ -468,7 +470,7 @@ RSpec.describe 'Notes', type: :request do
             end.to change(folder.notes, :count).by(-1)
 
             expect(response.status).to eq(200)
-            expect(note.images.attached?).to be_falsey
+            expect(note.images).not_to be_attached
           end
         end
       end
@@ -495,7 +497,7 @@ RSpec.describe 'Notes', type: :request do
         expect(response).to have_http_status(:not_found)
       end
 
-      context 'パラメーターが異常値の場合' do
+      context 'when パラメーターが異常値' do
         it '存在しないIDの場合は、削除できない' do
           expect do
             delete v1_project_folder_note_path(
@@ -526,8 +528,8 @@ RSpec.describe 'Notes', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
-      context 'ユーザーが所属しているプロジェクトの場合' do
+    context 'when 認証されている' do
+      context 'when ユーザーが所属しているプロジェクト' do
         it '画像を追加できる' do
           put v1_project_note_image_attach_path(
             project_id: user.projects[0].id,
@@ -536,11 +538,11 @@ RSpec.describe 'Notes', type: :request do
              headers: auth_headers
 
           expect(response.status).to eq(200)
-          expect(Note.find(note.id).images.attached?).to be_truthy
+          expect(Note.find(note.id).images).to be_attached
         end
       end
 
-      context 'ユーザーが所属していないプロジェクトの場合' do
+      context 'when ユーザーが所属していないプロジェクト' do
         it '画像を追加できない' do
           put v1_project_note_image_attach_path(
             project_id: user_dummy.projects[0].id,
@@ -548,11 +550,11 @@ RSpec.describe 'Notes', type: :request do
           ), params: { note: { lock_version: note_dummy.lock_version, images: image_attribute } },
              headers: auth_headers
           expect(response).to have_http_status(:forbidden)
-          expect(Note.find(note_dummy.id).images.attached?).to be_falsey
+          expect(Note.find(note_dummy.id).images).not_to be_attached
         end
       end
 
-      context 'パラメーターが異常値の場合' do
+      context 'when パラメーターが異常値の場合' do
         it '更新できない' do
           put v1_project_note_image_attach_path(
             project_id: user.projects[0].id,
