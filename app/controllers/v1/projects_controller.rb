@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# ノート情報を管理するクラス
 class V1::ProjectsController < V1::ApplicationController
   before_action lambda {
     authenticate_project!(params[:id])

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 require 'base64'
 
@@ -24,7 +26,7 @@ RSpec.describe 'Users', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
+    context 'when 認証されている' do
       it 'success' do
         get v1_auth_validate_token_path, headers: auth_params
         expect(response).to have_http_status(:ok)
@@ -35,7 +37,7 @@ RSpec.describe 'Users', type: :request do
         expect(body[:data][:email]).to eq(user.email)
       end
 
-      context 'userにavatarが設定されている場合' do
+      context 'when userにavatarが設定されている' do
         let(:filename) { 'neko_test.jpg' }
 
         before do
@@ -75,11 +77,11 @@ RSpec.describe 'Users', type: :request do
         end
       end
 
-      context 'case トークンの有効期限内' do
+      context 'when case トークンの有効期限内' do
         it_behaves_like 'use authentication tokens of different ages', 1.weeks, :success
       end
 
-      context 'case トークンの有効期限外' do
+      context 'when case トークンの有効期限外' do
         it_behaves_like 'use authentication tokens of different ages', 3.weeks, :unauthorized
       end
     end
@@ -91,7 +93,7 @@ RSpec.describe 'Users', type: :request do
       user_attributes
     end
 
-    context 'parameterが正常値の場合' do
+    context 'when parameterが正常値' do
       let!(:user) { FactoryBot.create(:user) } # 比較用ユーザー
 
       it 'emailの重複ユーザーがいない場合、作成できる' do
@@ -119,60 +121,60 @@ RSpec.describe 'Users', type: :request do
       end
     end
 
-    context 'parameterが異常値の場合' do
+    context 'when parameterが異常値' do
       subject { proc { post v1_auth_sign_up_path, params: user_attributes } }
 
-      shared_examples 'not create user' do |errorMessage|
+      shared_examples 'not create user' do |error_message|
         it do
           expect(subject).to change(User.all, :count).by(0)
           expect(response).to have_http_status(:unprocessable_entity)
-          expect(json_parse_body(response)[:errors].to_s).to include errorMessage if errorMessage
+          expect(json_parse_body(response)[:errors].to_s).to include error_message if error_message
         end
       end
 
-      context '必要なparameterが完全に異なる場合' do
+      context 'when 必要なparameterが完全に異なる' do
         let(:user_attributes) { { test: 'test' } }
 
         it_behaves_like 'not create user'
       end
 
-      context 'nameが存在しない場合' do
+      context 'when nameが存在しない' do
         let(:user_attributes) { FactoryBot.attributes_for(:user_new_not_name) }
 
         it_behaves_like 'not create user', 'を入力してください'
       end
 
-      context 'nameが空の場合' do
+      context 'when nameが空' do
         let(:user_attributes) { FactoryBot.attributes_for(:user_new_name_null) }
 
         it_behaves_like 'not create user', 'を入力してください'
       end
 
-      context 'emailが存在しない場合' do
+      context 'when emailが存在しない' do
         let(:user_attributes) { FactoryBot.attributes_for(:user_new_not_email) }
 
         it_behaves_like 'not create user', 'を入力してください'
       end
 
-      context 'emailが空の場合' do
+      context 'when emailが空' do
         let(:user_attributes) { FactoryBot.attributes_for(:user_new_email_null) }
 
         it_behaves_like 'not create user', 'を入力してください'
       end
 
-      context 'passwordが存在しない場合' do
+      context 'when passwordが存在しない' do
         let(:user_attributes) { FactoryBot.attributes_for(:user_new_not_password) }
 
         it_behaves_like 'not create user', 'を入力してください'
       end
 
-      context 'passwordが空の場合' do
+      context 'when passwordが空' do
         let(:user_attributes) { FactoryBot.attributes_for(:user_new_password_null) }
 
         it_behaves_like 'not create user', 'を入力してください'
       end
 
-      context 'password_confirmationがpasswordと一致しない場合' do
+      context 'when password_confirmationがpasswordと一致しない' do
         let(:user_attributes) { FactoryBot.attributes_for(:user_new_password_confirmation_null) }
 
         it_behaves_like 'not create user', '一致しません'
@@ -188,13 +190,13 @@ RSpec.describe 'Users', type: :request do
       expect(response).to have_http_status(:not_found)
     end
 
-    context '認証を事前に実施する場合' do
-      subject do
+    context 'when 認証を事前に実施する' do
+      subject(:auth) do
         put v1_auth_path, params: user_for_update_attribute, headers: auth_params
         response
       end
 
-      context '認証情報が誤っている場合' do
+      context 'when 認証情報が誤っている' do
         let(:auth_params) do
           login(user)
           auth_params = get_auth_params_from_login_response_headers(response)
@@ -203,14 +205,14 @@ RSpec.describe 'Users', type: :request do
         end
 
         it '失敗する' do
-          expect(subject).to have_http_status(:not_found)
+          expect(auth).to have_http_status(:not_found)
         end
       end
 
-      context 'parameterにpasswordが存在しない場合' do
-        context 'parameterにemailが存在する場合' do
+      context 'when parameterにpasswordが存在しない' do
+        context 'when parameterにemailが存在する' do
           it '更新に成功する' do
-            expect(subject).to have_http_status(:ok)
+            expect(auth).to have_http_status(:ok)
 
             token = User.find(user.id).confirmation_token
             get v1_auth_confirmation_path, params: { confirmation_token: token }
@@ -222,11 +224,11 @@ RSpec.describe 'Users', type: :request do
           end
         end
 
-        context 'case not exist email in parameter' do
+        context 'when case not exist email in parameter' do
           let(:user_for_update_attribute) { FactoryBot.attributes_for(:user_for_update) }
 
           it '更新に成功する' do
-            expect(subject).to have_http_status(:ok)
+            expect(auth).to have_http_status(:ok)
 
             # User情報が変更されているかどうか。
             body = json_parse_body(response)
@@ -235,14 +237,14 @@ RSpec.describe 'Users', type: :request do
           end
         end
 
-        context 'case exist avatar in parameter' do
+        context 'when case exist avatar in parameter' do
           let(:filename) { 'neko_test.jpg' }
           let(:user_for_update_attribute) do
             add_param_avatar(FactoryBot.attributes_for(:user_for_update, :update_email), filename)
           end
 
           it '更新に成功する' do
-            expect(subject).to have_http_status(:ok)
+            expect(auth).to have_http_status(:ok)
 
             token = User.find(user.id).confirmation_token
             get v1_auth_confirmation_path, params: { confirmation_token: token }
@@ -257,11 +259,11 @@ RSpec.describe 'Users', type: :request do
         end
       end
 
-      context 'parameterにpasswordとcurrent_passwordが存在した場合' do
+      context 'when parameterにpasswordとcurrent_passwordが存在する' do
         let(:user_for_update_attribute) { FactoryBot.attributes_for(:user_for_update, :update_password) }
 
         it 'can change password' do
-          expect(subject).to have_http_status(:ok)
+          expect(auth).to have_http_status(:ok)
 
           # 新しいパスワードで、ログインできるかどうか
           user_new = User.new(email: user.email, password: user_for_update_attribute[:password])
@@ -270,15 +272,15 @@ RSpec.describe 'Users', type: :request do
         end
       end
 
-      context 'parameterが異常値の場合' do
-        shared_examples 'not update user' do |errorMessage|
+      context 'when parameterが異常値' do
+        shared_examples 'not update user' do |error_message|
           it '失敗する' do
-            expect(subject).to have_http_status(:unprocessable_entity)
-            expect(json_parse_body(response)[:errors][:full_messages].to_s).to include errorMessage if errorMessage
+            expect(auth).to have_http_status(:unprocessable_entity)
+            expect(json_parse_body(response)[:errors][:full_messages].to_s).to include error_message if error_message
           end
         end
 
-        context 'emailの重複ユーザーがいる場合' do
+        context 'when emailの重複ユーザーがいる' do
           before do
             FactoryBot.create(:user_for_update, :create_user)
           end
@@ -286,13 +288,13 @@ RSpec.describe 'Users', type: :request do
           it_behaves_like 'not update user', 'すでに存在します'
         end
 
-        context '必要なparameterが完全に異なる場合' do
+        context 'when 必要なparameterが完全に異なる' do
           let(:user_for_update_attribute) { { test: 'test' } }
 
           it_behaves_like 'not update user'
         end
 
-        context 'password_confirmationがpasswordと一致しない場合' do
+        context 'when password_confirmationがpasswordと一致しない' do
           let(:user) { FactoryBot.create(:user_for_update, :create_user) }
           let(:user_for_update_attribute) do
             FactoryBot.attributes_for(:user_for_update, :not_equal_password_confirmation)
@@ -301,7 +303,7 @@ RSpec.describe 'Users', type: :request do
           it_behaves_like 'not update user', '一致しません'
         end
 
-        context 'current_passwordが現在のパスワードと一致しない場合' do
+        context 'when current_passwordが現在のパスワードと一致しない' do
           let(:user) { FactoryBot.create(:user_for_update, :create_user) }
           let(:user_for_update_attribute) do
             FactoryBot.attributes_for(:user_for_update, :not_equal_current_password)
@@ -319,7 +321,7 @@ RSpec.describe 'Users', type: :request do
       { data: "data:image/jpeg;base64,#{avatar_encoded}", filename: 'neko_test.jpg' }
     end
 
-    context '認証されていない場合' do
+    context 'when 認証されていない' do
       before do
         user.update(avatar: avatar_attribute)
       end
@@ -330,13 +332,13 @@ RSpec.describe 'Users', type: :request do
       end
     end
 
-    context '認証を事前に実施した場合' do
-      subject do
+    context 'when 認証を事前に実施した' do
+      subject(:delete_avatar) do
         delete v1_auth_avatar_path, headers: auth_params
         response
       end
 
-      context '認証情報が誤っている場合' do
+      context 'when 認証情報が誤っている' do
         before do
           user.update(avatar: avatar_attribute)
         end
@@ -349,26 +351,26 @@ RSpec.describe 'Users', type: :request do
         end
 
         it '失敗する' do
-          expect(subject).to have_http_status(:not_found)
-          expect(user.avatar.attached?).to be_truthy
+          expect(delete_avatar).to have_http_status(:not_found)
+          expect(user.avatar).to be_attached
         end
       end
 
-      context '認証情報が正しい場合' do
+      context 'when 認証情報が正しい' do
         before do
           user.update(avatar: avatar_attribute)
         end
 
         it 'avatarの削除に成功する' do
-          expect(subject).to have_http_status(:ok)
-          expect(User.find(user.id).avatar.attached?).to be_falsey
+          expect(delete_avatar).to have_http_status(:ok)
+          expect(User.find(user.id).avatar).not_to be_attached
         end
       end
 
-      context 'avatarが設定されていない場合' do
+      context 'when avatarが設定されていない¥' do
         it 'avatarの削除に失敗する' do
-          expect(subject).to have_http_status(:not_found)
-          expect(User.find(user.id).avatar.attached?).to be_falsey
+          expect(delete_avatar).to have_http_status(:not_found)
+          expect(User.find(user.id).avatar).not_to be_attached
         end
       end
     end
@@ -383,10 +385,10 @@ RSpec.describe 'Users', type: :request do
       expect(response).to have_http_status(:not_found)
     end
 
-    context '認証を事前に実施した場合' do
-      subject { proc { delete v1_auth_destory_path, headers: auth_params } }
+    context 'when 認証を事前に実施した' do
+      subject(:delete_user) { proc { delete v1_auth_destory_path, headers: auth_params } }
 
-      context '認証情報が誤っている場合' do
+      context 'when 認証情報が誤っている' do
         let(:auth_params) do
           login(user)
           auth_params = get_auth_params_from_login_response_headers(response)
@@ -395,14 +397,14 @@ RSpec.describe 'Users', type: :request do
         end
 
         it '失敗する' do
-          expect(subject).to change(User.all, :count).by(0)
+          expect(delete_user).to change(User.all, :count).by(0)
           expect(response).to have_http_status(:not_found)
         end
       end
 
-      context '認証情報が正しい場合' do
+      context 'when 認証情報が正しい' do
         it '削除に成功する' do
-          expect(subject).to change(User.all, :count).by(-1)
+          expect(delete_user).to change(User.all, :count).by(-1)
           expect(response).to have_http_status(:ok)
         end
       end
@@ -415,7 +417,7 @@ RSpec.describe 'Users', type: :request do
       expect(response).to have_http_status(:ok)
     end
 
-    context 'Userのemailが誤っている場合' do
+    context 'when Userのemailが誤っている' do
       before do
         user.email = 'error@example.com'
       end
@@ -426,7 +428,7 @@ RSpec.describe 'Users', type: :request do
       end
     end
 
-    context 'Userのpasswordが誤っている場合' do
+    context 'when Userのpasswordが誤っている' do
       before do
         user.password = 'errorPassword'
       end
@@ -437,8 +439,7 @@ RSpec.describe 'Users', type: :request do
       end
     end
 
-    # Dummy Comment For Formatter Error
-    context 'ログインに規定回数失敗し��場合' do
+    context 'when ログインに規定回数失敗した' do
       before do
         user.password = 'bad-Password'
 
@@ -465,15 +466,15 @@ RSpec.describe 'Users', type: :request do
   end
 
   describe 'DELETE session#destroy' do
-    context 'ログインしていない場合' do
+    context 'when ログインしていない' do
       it 'ログアウトできない' do
         delete v1_auth_sign_out_path
         expect(response).to have_http_status(:not_found)
       end
     end
 
-    context 'ログインしている場合' do
-      subject do
+    context 'when ログインしている' do
+      subject(:delete_session) do
         delete v1_auth_sign_out_path, headers: auth_params
         response
       end
@@ -482,7 +483,7 @@ RSpec.describe 'Users', type: :request do
         it { is_expected.to have_http_status(http_status) }
       end
 
-      context '認証情報が誤っている場合' do
+      context 'when 認証情報が誤っている' do
         let(:auth_params) do
           login(user)
           auth_params = get_auth_params_from_login_response_headers(response)
@@ -493,10 +494,10 @@ RSpec.describe 'Users', type: :request do
         it_behaves_like 'execute logout', :not_found
       end
 
-      context '認証情報が正しい場合' do
+      context 'when 認証情報が正しい' do
         it_behaves_like 'execute logout', :success
         it 'ログアウト後、ログインなしでアクセスできないこと' do
-          expect(subject).to have_http_status(:success)
+          expect(delete_session).to have_http_status(:success)
 
           get v1_auth_validate_token_path, headers: auth_params
           expect(response).to have_http_status(:unauthorized)
@@ -505,11 +506,11 @@ RSpec.describe 'Users', type: :request do
     end
   end
 
-  describe 'POST session#create_sample', focus: :true do
+  describe 'POST session#create_sample' do
     let(:user) { FactoryBot.create(:sample_user) }
     let!(:user_sample) { FactoryBot.create(:user_sample, user: user) }
 
-    context 'exist sample user' do
+    context 'when exist sample user' do
       it 'success signin' do
         expect do
           post v1_auth_sign_in_sample_path
@@ -518,7 +519,7 @@ RSpec.describe 'Users', type: :request do
       end
     end
 
-    context 'not exist sample user' do
+    context 'when not exist sample user' do
       before do
         post v1_auth_sign_in_sample_path
       end
@@ -544,7 +545,7 @@ RSpec.describe 'Users', type: :request do
       @mail_reset_token  = @mail.body.match(/reset_password_token=(.*)"/)[1]
     end
 
-    context 'parameterが正しい場合' do
+    context 'when parameterが正しい' do
       it 'success' do
         get v1_edit_auth_password_path, params: { reset_password_token: @mail_reset_token,
                                                   redirect_url: @mail_redirect_url }
@@ -552,15 +553,15 @@ RSpec.describe 'Users', type: :request do
       end
     end
 
-    context 'parameterが誤っている場合' do
-      context 'uncorrect reset_password_token' do
+    context 'when parameterが誤っている' do
+      context 'when uncorrect reset_password_token' do
         it 'failure' do
           get v1_edit_auth_password_path, params: { reset_password_token: 'badToken' }
           expect(response).to have_http_status(:found)
         end
       end
 
-      context '必要なparameterが完全に異なる場合' do
+      context 'when 必要なparameterが完全に異なる' do
         it 'failure' do
           get v1_edit_auth_password_path, params: { test: 'test' }
           expect(response).to have_http_status(:found)
@@ -570,7 +571,7 @@ RSpec.describe 'Users', type: :request do
   end
 
   describe 'POST passwords#create' do
-    context '指定したemailのユーザーが存在する場合' do
+    context 'when 指定したemailのユーザーが存在する' do
       it 'send email' do
         @redirect_url = 'http://ng-token-auth.dev'
         post v1_auth_password_create_path, params: { email: user.email, redirect_url: @redirect_url }
@@ -588,13 +589,13 @@ RSpec.describe 'Users', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証を事前に実施した場合' do
-      subject do
+    context 'when 認証を事前に実施した' do
+      subject(:update_password) do
         put v1_auth_password_update_path, params: user_for_password_attribute, headers: auth_params
         response
       end
 
-      context '認証情報が誤っている場合' do
+      context 'when 認証情報が誤っている' do
         let(:auth_params) do
           login(user)
           auth_params = get_auth_params_from_login_response_headers(response)
@@ -603,14 +604,14 @@ RSpec.describe 'Users', type: :request do
         end
 
         it '失敗する' do
-          expect(subject).to have_http_status(:unauthorized)
+          expect(update_password).to have_http_status(:unauthorized)
         end
       end
 
-      context '認証ヘッダがが存在する場合' do
-        context 'parameterにpasswordとpassword_confirmationが存在した場合' do
+      context 'when 認証ヘッダが存在する' do
+        context 'when parameterにpasswordとpassword_confirmationが存在する' do
           it 'パスワードを変更できる' do
-            expect(subject).to have_http_status(:ok)
+            expect(update_password).to have_http_status(:ok)
 
             # 新しいパスワードでログインできるかどうか
             user_new = User.new(email: user.email,
@@ -621,21 +622,21 @@ RSpec.describe 'Users', type: :request do
         end
       end
 
-      context 'parameterが異常値の場合' do
-        shared_examples 'not update user' do |errorMessage|
+      context 'when parameterが異常値' do
+        shared_examples 'not update user' do |error_message|
           it '失敗する' do
             expect(subject).to have_http_status(:unprocessable_entity)
-            expect(json_parse_body(response)[:errors].to_s).to include errorMessage if errorMessage
+            expect(json_parse_body(response)[:errors].to_s).to include error_message if error_message
           end
         end
 
-        context '必要なparameterが完全に異なる場合' do
+        context 'when 必要なparameterが完全に異なる' do
           let(:user_for_password_attribute) { { test: 'test' } }
 
           it_behaves_like 'not update user'
         end
 
-        context 'password_confirmationがpasswordと一致しない場合' do
+        context 'when password_confirmationがpasswordと一致しない' do
           let(:user_for_password_attribute) do
             FactoryBot.attributes_for(:user_for_update, :not_equal_password_confirmation)
           end
@@ -643,7 +644,7 @@ RSpec.describe 'Users', type: :request do
           it_behaves_like 'not update user', '一致しません'
         end
 
-        context 'parameterにcurrent_passwordが存在する場合' do
+        context 'when parameterにcurrent_passwordが存在する' do
           let(:user_for_password_attribute) do
             FactoryBot.attributes_for(:user_for_update, :exist_current_password)
           end
@@ -651,7 +652,7 @@ RSpec.describe 'Users', type: :request do
           it_behaves_like 'not update user', 'パラメータが与えられていません'
         end
 
-        context 'parameterにpasswordが存在しない場合' do
+        context 'when parameterにpasswordが存在しない' do
           let(:user_for_password_attribute) do
             FactoryBot.attributes_for(:user_for_update, :not_exist_password)
           end
@@ -659,7 +660,7 @@ RSpec.describe 'Users', type: :request do
           it_behaves_like 'not update user', 'パラメータが与えられていません'
         end
 
-        context 'parameterにpassword_confirmationが存在しない場合' do
+        context 'when parameterにpassword_confirmationが存在しない' do
           let(:user_for_password_attribute) do
             FactoryBot.attributes_for(:user_for_update, :not_exist_password_confirmation)
           end
@@ -669,16 +670,16 @@ RSpec.describe 'Users', type: :request do
       end
     end
 
-    context '認証(ログイン)を事前に実施しない場合' do
-      context 'parameterにpasswordとpassword_confirmationが存在した場合' do
-        subject do
+    context 'when 認証(ログイン)を事前に実施しない' do
+      context 'when parameterにpasswordとpassword_confirmationが存在する' do
+        subject(:update_password) do
           put v1_auth_password_update_path,
               params: { password: 'password2', password_confirmation: 'password2' },
               headers: auth_params
           response
         end
 
-        context '認証情報が誤っている場合' do
+        context 'when 認証情報が誤っている' do
           let(:auth_params) do
             # password reset
             auth_params = get_auth_params_from_reset_password(user.email)
@@ -687,18 +688,18 @@ RSpec.describe 'Users', type: :request do
           end
 
           it 'パスワードを変更できない' do
-            expect(subject).to have_http_status(:unauthorized)
+            expect(update_password).to have_http_status(:unauthorized)
           end
         end
 
-        context '認証情報が正しい場合' do
+        context 'when 認証情報が正しい' do
           let(:auth_params) do
             # password reset
             get_auth_params_from_reset_password(user.email)
           end
 
           it 'パスワードを変更できる' do
-            expect(subject).to have_http_status(:ok)
+            expect(update_password).to have_http_status(:ok)
 
             # 新しいパスワードでログインできるかどうか
             user_new = User.new(email: user.email,
@@ -717,13 +718,12 @@ RSpec.describe 'Users', type: :request do
     before do
       # ユーザーを作成したのち、認証URLを実行する
       post v1_auth_sign_up_path, params: user_attributes
-      expect(response).to have_http_status(:ok)
 
       @mail = ActionMailer::Base.deliveries.last
       @confirmation_token = @mail.body.match(/confirmation_token=([^&]*)&/)[1]
     end
 
-    context 'parameterが正しい場合' do
+    context 'when parameterが正しい' do
       it 'リダイレクトできる' do
         get v1_auth_confirmation_path, params: { confirmation_token: @confirmation_token }
         expect(response).to have_http_status(:found)
@@ -731,7 +731,7 @@ RSpec.describe 'Users', type: :request do
       end
     end
 
-    context 'parameterが存在しない場合' do
+    context 'when parameterが存在しない' do
       it '異常用画面にリダイレクトする' do
         get v1_auth_confirmation_path
         expect(response).to have_http_status(:found)
@@ -739,7 +739,7 @@ RSpec.describe 'Users', type: :request do
       end
     end
 
-    context 'parameterが誤っている場合' do
+    context 'when parameterが誤っている' do
       it '異常用画面にリダイレクトする' do
         get v1_auth_confirmation_path, params: { test: 'test' }
         expect(response).to have_http_status(:found)
@@ -749,14 +749,14 @@ RSpec.describe 'Users', type: :request do
   end
 
   describe 'POST confirmations#create' do
-    context 'parameterが正しい場合' do
+    context 'when parameterが正しい' do
       it 'メールが送信できる' do
         post v1_auth_confirmation_create_path, params: { email: user.email }
         expect(response).to have_http_status(:ok)
       end
     end
 
-    context 'parameterが誤っている場合' do
+    context 'when parameterが誤っている' do
       it '必要なparameterが完全に異なる場合、メールが送信できない' do
         post v1_auth_confirmation_create_path, params: { test: 'test' }
         expect(response).to have_http_status(:unauthorized)
@@ -809,6 +809,10 @@ RSpec.describe 'Users', type: :request do
     get v1_edit_auth_password_path,
         params: { reset_password_token: mail_reset_token, redirect_url: mail_redirect_url }
 
+    create_auth_header(response)
+  end
+
+  def create_auth_header(response)
     location = URI.decode_www_form(response.headers['Location'])
     client = location.find { |key, _value| key == 'client' }[1]
     token = location.find { |key, _value| key == 'token' }[1]

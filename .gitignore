@@ -39,3 +39,6 @@
 
 # VSCode関連
 /.vscode
+
+# インテリセンス関連
+.solargraph.yml

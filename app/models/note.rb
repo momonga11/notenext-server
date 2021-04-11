@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# ノートのモデルクラス
 class Note < ApplicationRecord
   validates :title, length: { maximum: 255 }
   validates :lock_version, presence: true, on: :update
@@ -15,24 +18,24 @@ class Note < ApplicationRecord
   end
 
   def image_size
-    image = get_attached_image
+    image = attached_image
     return unless image
 
-    if image.byte_size > Rails.application.config.max_size_upload_image_file
-      errors.add(:images, :too_max_image_size,
-                 size: (Rails.application.config.max_size_upload_image_file / 1.megabyte).round)
-    end
+    return unless image.byte_size > Rails.application.config.max_size_upload_image_file
+
+    errors.add(:images, :too_max_image_size,
+               size: (Rails.application.config.max_size_upload_image_file / 1.megabyte).round)
   end
 
   def image_type
-    image = get_attached_image
+    image = attached_image
     return unless image
 
     errors.add(:images, :image_type) unless image.content_type.in?(Rails.application.config.type_upload_image_file)
   end
 
-  def get_attached_image
-    image = images.select { |image| image.id.nil? }[0]
+  def attached_image
+    image = images.select { |i| i.id.nil? }[0]
     image || nil
   end
 

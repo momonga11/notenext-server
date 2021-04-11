@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# ユーザーのモデルクラス
 class User < ActiveRecord::Base
   include ActiveStorageSupport::SupportForBase64
   # Include default devise modules. Others available are:
@@ -27,10 +28,10 @@ class User < ActiveRecord::Base
   end
 
   def avatar_size
-    if avatar.byte_size > Rails.application.config.max_size_upload_image_file
-      errors.add(:avatar, :too_max_image_size,
-                 size: (Rails.application.config.max_size_upload_image_file / 1.megabyte).round)
-    end
+    return unless avatar.byte_size > Rails.application.config.max_size_upload_image_file
+
+    errors.add(:avatar, :too_max_image_size,
+               size: (Rails.application.config.max_size_upload_image_file / 1.megabyte).round)
   end
 
   def avatar_type

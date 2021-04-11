@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# プロジェクトのモデルクラス
 class Project < ApplicationRecord
   validates :name, presence: true, length: { maximum: 255 }
   validates :lock_version, presence: true, on: :update
@@ -10,7 +13,7 @@ class Project < ApplicationRecord
   private
 
   def over_upper_limit
-    if users.length != 0 && UsersProject.exists?(user_id: users[0].id, is_owner: true)
+    if !users.empty? && UsersProject.exists?(user_id: users[0].id, is_owner: true)
       errors.add(:base, 'ユーザーが作成できるプロジェクト数の上限を越えているため、作成できません。')
     end
   end

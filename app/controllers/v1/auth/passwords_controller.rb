@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# DeviseTokenAuth::PasswordsControllerの継承クラス
 class V1::Auth::PasswordsController < DeviseTokenAuth::PasswordsController
   protected
 

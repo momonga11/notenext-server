@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe Note, type: :model do
@@ -40,13 +42,13 @@ RSpec.describe Note, type: :model do
       { data: "data:image/jpeg;base64,#{images64}", filename: 'neko_test.jpg' }
     end
 
-    context 'update' do
+    context 'when update' do
       it 'imagesが存在すれば更新できること' do
         note.update(images: images)
-        expect(note.images.attached?).to be_truthy
+        expect(note.images).to be_attached
       end
 
-      context 'attach_images' do
+      context 'when attach_images' do
         before do
           note.update(images: images)
         end
@@ -57,7 +59,7 @@ RSpec.describe Note, type: :model do
           end.to change(note.images, :count).by(1)
         end
 
-        context 'images_size' do
+        context 'when over images_size' do
           before do
             @max_size = Rails.application.config.max_size_upload_image_file
             Rails.application.config.max_size_upload_image_file = 1.kilobyte
@@ -73,7 +75,7 @@ RSpec.describe Note, type: :model do
           end
         end
 
-        context 'images_type' do
+        context 'when different images_type' do
           before do
             @type = Rails.application.config.type_upload_image_file
             Rails.application.config.type_upload_image_file = %('image/png')
@@ -91,52 +93,53 @@ RSpec.describe Note, type: :model do
       end
     end
 
-    context 'destroy' do
+    context 'when destroy' do
       before do
         note.update(images: images)
       end
 
       it 'noteを削除すると、imagesのファイルも削除されること' do
         expect(note.destroy).to be_truthy
-        expect(note.images.attached?).to be_falsey
+        expect(note.images).not_to be_attached
       end
     end
 
-    describe 'update htmltext with img', focus: :true do
+    describe 'update htmltext with img' do
       let!(:img_url) do
         note.update(images: images)
 
-        image = note.images.sort_by { |image| image.id }.reverse[0]
+        image = note.images.sort_by(&:id).reverse[0]
         url = Rails.application.routes.url_helpers.url_for(image)
         "<img src=\"#{url}\">"
       end
 
+      # テストでは利用しないが、複数分作成するために実行する
       let!(:img_url2) do
         images64 = Base64.encode64(IO.read('spec/fixtures/neko_test.jpg'))
         images2 = { data: "data:image/jpeg;base64,#{images64}", filename: 'neko_test2.jpg' }
 
         note.update(images: images2)
 
-        image = note.images.sort_by { |image| image.id }.reverse[0]
+        image = note.images.sort_by(&:id).reverse[0]
         url = Rails.application.routes.url_helpers.url_for(image)
         "<img src=\"#{url}\">"
       end
 
-      context 'img要素を1/2削除した場合' do
+      context 'when img要素を1/2削除した' do
         it '対象の画像ファイルが削除されること' do
           expect do
             note.update(htmltext: "<p>hoge</p>#{img_url}<p>fuga</p>")
-          end.to change(Note.find(note.id).images, :count).by(-1)
-          expect(Note.find(note.id).images.count).to be 1
-          expect(Note.find(note.id).images[0].blob.filename == 'neko_test.jpg').to be_truthy
+          end.to change(described_class.find(note.id).images, :count).by(-1)
+          expect(described_class.find(note.id).images.count).to be 1
+          expect(described_class.find(note.id).images[0].blob.filename == 'neko_test.jpg').to be_truthy
         end
       end
 
-      context 'img要素を2/2削除した場合' do
+      context 'when img要素を2/2削除した' do
         it '画像ファイルが全て削除されること' do
           expect do
             note.update(htmltext: '<p>hoge</p>')
-          end.to change { Note.find(note.id).images.attached? }.from(true).to(false)
+          end.to change { described_class.find(note.id).images.attached? }.from(true).to(false)
         end
       end
     end

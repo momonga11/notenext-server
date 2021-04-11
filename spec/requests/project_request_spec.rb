@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe 'Projects', type: :request do
@@ -14,7 +16,7 @@ RSpec.describe 'Projects', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
+    context 'when 認証されている' do
       it 'ユーザーが所属しているプロジェクトのデータが取得できる' do
         get v1_projects_path, headers: auth_headers
         expect(json_parse_body(response).map { |project| project[:id] }).to eq user.projects.ids
@@ -29,18 +31,18 @@ RSpec.describe 'Projects', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
-      context 'クエリパラメーターにwith_associationが存在する場合' do
-        context 'with_association=Trueの場合' do
+    context 'when 認証されている' do
+      context 'when クエリパラメーターにwith_associationが存在する' do
+        context 'when with_association=True' do
           it 'ユーザーが所属しているヘッダー用プロジェクトのデータは取得できる' do
             get v1_project_path(user.projects.ids[0]), params: { with_association: true }, headers: auth_headers
             response_json = json_parse_body(response)
             expect(response_json[:id]).to eq user.projects.ids[0]
             # response.bodyの検証
-            expect(response_json.key?(:name)).to be_truthy
-            expect(response_json.key?(:user)).to be_truthy
-            expect(response_json[:user].key?(:avatar)).to be_truthy
-            expect(response_json.key?(:folders)).to be_truthy
+            expect(response_json).to be_key(:name)
+            expect(response_json).to be_key(:user)
+            expect(response_json[:user]).to be_key(:avatar)
+            expect(response_json).to be_key(:folders)
           end
 
           it 'ユーザーが所属していないヘッダー用プロジェクトのデータは取得できない' do
@@ -49,7 +51,7 @@ RSpec.describe 'Projects', type: :request do
           end
         end
 
-        context 'with_association=Falseの場合' do
+        context 'when with_association=False' do
           it 'ユーザーが所属しているプロジェクトのデータは取得できる' do
             get v1_project_path(user.projects.ids[0]), params: { with_association: false }, headers: auth_headers
             expect(json_parse_body(response)[:id]).to eq user.projects.ids[0]
@@ -62,13 +64,13 @@ RSpec.describe 'Projects', type: :request do
         end
       end
 
-      context 'クエリパラメーターにwith_associationが存在しない場合' do
+      context 'when クエリパラメーターにwith_associationが存在しない' do
         it 'ユーザーが所属しているプロジェクトのデータは取得できる' do
           get v1_project_path(user.projects.ids[0]), headers: auth_headers
           expect(json_parse_body(response)[:id]).to eq user.projects.ids[0]
         end
 
-        it 'ユーザーが所属していないプロジェクトのデータは取得できない' do
+        it 'ユーザーが所属していないプロジェクトは取得できない' do
           get v1_project_path(user2.projects.ids[0]), headers: auth_headers
           expect(response).to have_http_status(:forbidden)
         end
@@ -89,7 +91,7 @@ RSpec.describe 'Projects', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
+    context 'when 認証されている' do
       it 'ユーザーがオーナーのプロジェクトが一つもない場合は作成できる' do
         expect do
           post v1_projects_path, params: { project: project_attributes }, headers: auth_headers
@@ -104,7 +106,7 @@ RSpec.describe 'Projects', type: :request do
         expect(response.body).to include('ユーザーが作成できるプロジェクト数の上限を越えているため、作成できません。')
       end
 
-      context 'パラメーターが異常値の場合' do
+      context 'when パラメーターが異常値' do
         it '作成できない' do
           expect do
             post v1_projects_path, params: { test: 'test' }, headers: auth_headers
@@ -132,7 +134,7 @@ RSpec.describe 'Projects', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されていない場合' do
+    context 'when 認証されていない' do
       it 'ユーザーが所属するプロジェクトの場合は更新できる' do
         put v1_project_path(user.projects.ids[0]), params: { project: project2_attributes }, headers: auth_headers
         response_json = json_parse_body(response)
@@ -147,7 +149,7 @@ RSpec.describe 'Projects', type: :request do
         expect(response_json[:name]).not_to eq(project2_attributes[:name])
       end
 
-      context 'パラメーターが異常値の場合' do
+      context 'when パラメーターが異常値' do
         it '更新できない' do
           put v1_project_path(user.projects.ids[0]), params: { test: 'test' }, headers: auth_headers
           expect(response).to have_http_status(:bad_request)
@@ -183,7 +185,7 @@ RSpec.describe 'Projects', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
+    context 'when 認証されている' do
       it 'ユーザーが所属するプロジェクトの場合は削除できる' do
         expect do
           delete v1_project_path(user.projects.ids[0]), headers: auth_headers
@@ -198,7 +200,7 @@ RSpec.describe 'Projects', type: :request do
         expect(response.status).to eq(403)
       end
 
-      context 'パラメーターが異常値の場合' do
+      context 'when パラメーターが異常値' do
         it '存在しないIDの場合は、削除できない' do
           expect do
             delete v1_project_path('test'), headers: auth_headers

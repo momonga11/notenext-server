@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe 'Folders', type: :request do
@@ -16,7 +18,7 @@ RSpec.describe 'Folders', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
+    context 'when 認証されている' do
       let!(:folder2) { FactoryBot.create(:folder, project: user.projects[0]) }
 
       it 'ユーザーが所属しているプロジェクトの場合、フォルダが取得できる(複数)' do
@@ -39,7 +41,7 @@ RSpec.describe 'Folders', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
+    context 'when 認証されている' do
       it 'ユーザーが所属しているプロジェクトのデータは取得できない' do
         get v1_project_folder_path(project_id: folder.project.id, id: folder.id), headers: auth_headers
         expect(json_parse_body(response)[:id]).to eq folder.id
@@ -69,7 +71,7 @@ RSpec.describe 'Folders', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
+    context 'when 認証されている' do
       it 'ユーザーが所属しているプロジェクトの場合、フォルダが作成できる' do
         expect do
           post v1_project_folders_path(project_id: user.projects[0].id), params: { folder: folder_attributes },
@@ -85,7 +87,7 @@ RSpec.describe 'Folders', type: :request do
         expect(response.status).to eq(403)
       end
 
-      context 'パラメーターが異常値の場合' do
+      context 'when パラメーターが異常値' do
         it '作成できない' do
           expect do
             post v1_project_folders_path(project_id: user.projects[0].id), params: { test: 'test' },
@@ -116,7 +118,7 @@ RSpec.describe 'Folders', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
+    context 'when 認証されている' do
       it 'ユーザーが所属するプロジェクトの場合は更新できる' do
         put v1_project_folder_path(project_id: folder.project.id, id: folder.id),
             params: { folder: folder2_attributes }, headers: auth_headers
@@ -131,7 +133,7 @@ RSpec.describe 'Folders', type: :request do
         expect(json_parse_body(response)[:name]).not_to eq(folder2_attributes[:name])
       end
 
-      context 'パラメーターが異常値の場合' do
+      context 'when パラメーターが異常値' do
         it '更新できない' do
           put v1_project_folder_path(project_id: folder.project.id, id: folder.id), params: { test: 'test' },
                                                                                     headers: auth_headers
@@ -181,7 +183,7 @@ RSpec.describe 'Folders', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    context '認証されている場合' do
+    context 'when 認証されている' do
       it 'ユーザーが所属するプロジェクトの場合はフォルダを削除できる' do
         expect do
           delete v1_project_folder_path(project_id: folder.project.id, id: folder.id), headers: auth_headers
@@ -196,7 +198,7 @@ RSpec.describe 'Folders', type: :request do
         expect(response.status).to eq(403)
       end
 
-      context 'パラメーターが異常値の場合' do
+      context 'when パラメーターが異常値' do
         it '存在しないIDの場合は、削除できない' do
           expect do
             delete v1_project_folder_path(project_id: folder.project.id, id: -1), headers: auth_headers

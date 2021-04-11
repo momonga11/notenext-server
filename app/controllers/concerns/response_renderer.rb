@@ -1,16 +1,19 @@
+# frozen_string_literal: true
+
+# レスポンスのレンダリングメソッドを定義したモジュール
 module ResponseRenderer
   # 200 Success
-  def response_success_request(responseObject = nil)
-    if responseObject
-      render status: :ok, json: responseObject
+  def response_success_request(response_object = nil)
+    if response_object
+      render status: :ok, json: response_object
     else
       render status: :ok
     end
   end
 
   # 201 Created
-  def response_created_request(responseObject, locationUrl)
-    render status: :created, json: responseObject, location: locationUrl
+  def response_created_request(response_object, location_url)
+    render status: :created, json: response_object, location: location_url
   end
 
   # 400 Bad Request
@@ -40,8 +43,8 @@ module ResponseRenderer
   end
 
   # 500 Internal Server Error
-  def response_internal_server_error(e)
-    logger.error(e)
+  def response_internal_server_error(error)
+    logger.error(error)
     render status: 500, json: create_error_response(I18n.t('response_errors.messages.internal_server'))
   end
 
