@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :note do
     title { 'testNote1' }
@@ -7,7 +9,7 @@ FactoryBot.define do
     association :folder
   end
 
-  factory :note2, class: Note do
+  factory :note2, class: 'Note' do
     title { 'testNote2' }
     text { '自分は東北の田舎に生れましたので、汽車をはじめて見たのは、よほど大きくなってからでした' }
     htmltext { '<div>自分は東北の田舎に生れましたので、</div><div>汽車をはじめて見たのは、よほど大きくなってからでした</div>' }

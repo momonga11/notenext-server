@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
   namespace :v1 do
     resources :projects, only: %i[index show create update destroy] do
@@ -39,6 +41,7 @@ Rails.application.routes.draw do
     end
   end
 
+  # 本番環境かつCDNが有効な場合、画像のURLをCDN経由にする
   direct :cdn_proxy do |model, options|
     cdn_options = if Rails.env.development? || !ENV['CDN_HOST'].present?
                     Rails.application.routes.default_url_options

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_support/core_ext/integer/time'
 
 # The test environment is used exclusively to run your application's
@@ -48,12 +50,8 @@ Rails.application.configure do
   # The :test delivery method accumulates sent emails in the
   # ActionMailer::Base.deliveries array.
   config.action_mailer.default_url_options = {
-    host: ENV.fetch('HOST_DEFAULT_URL_HOST') do
-      'localhost'
-    end,
-    port: ENV.fetch('HOST_DEFAULT_URL_PORT') do
-      '3000'
-    end
+    host: ENV.fetch('HOST_DEFAULT_URL_HOST', 'localhost'),
+    port: ENV.fetch('HOST_DEFAULT_URL_HOST', '3000')
   }
 
   config.action_mailer.delivery_method = :test
@@ -87,10 +85,6 @@ Rails.application.configure do
 end
 
 Rails.application.routes.default_url_options = {
-  host: ENV.fetch('HOST_DEFAULT_URL_HOST') do
-    'localhost'
-  end,
-  port: ENV.fetch('HOST_DEFAULT_URL_PORT') do
-    '3000'
-  end
+  host: ENV.fetch('HOST_DEFAULT_URL_HOST', 'localhost'),
+  port: ENV.fetch('HOST_DEFAULT_URL_PORT', '3000')
 }

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe User, type: :model do
@@ -29,13 +31,13 @@ RSpec.describe User, type: :model do
       { data: "data:image/jpeg;base64,#{avatar64}", filename: 'neko_test.jpg' }
     end
 
-    context 'update' do
+    context 'when update' do
       it 'avatarが存在すれば更新できること' do
         user.update(avatar: avatar)
-        expect(user.avatar.attached?).to be_truthy
+        expect(user.avatar).to be_attached
       end
 
-      context 'avatar_size' do
+      context 'when over avatar_size' do
         before do
           @max_size = Rails.application.config.max_size_upload_image_file
           Rails.application.config.max_size_upload_image_file = 1.kilobyte
@@ -51,7 +53,7 @@ RSpec.describe User, type: :model do
         end
       end
 
-      context 'avatar_type' do
+      context 'when different avatar_type' do
         before do
           @type = Rails.application.config.type_upload_image_file
           Rails.application.config.type_upload_image_file = %('image/png')
@@ -68,14 +70,14 @@ RSpec.describe User, type: :model do
       end
     end
 
-    context 'destroy' do
+    context 'when destroy' do
       before do
         user.update(avatar: avatar)
       end
 
       it 'userを削除すると、avatarのファイルも削除されること' do
         expect(user.destroy).to be_truthy
-        expect(user.avatar.attached?).to be_falsey
+        expect(user.avatar).not_to be_attached
       end
     end
   end

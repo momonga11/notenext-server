@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# DeviseTokenAuth::RegistrationsControllerの継承クラス
 class V1::Auth::RegistrationsController < DeviseTokenAuth::RegistrationsController
   before_action :set_user_by_token, only: %i[destroy update destroy_avatar]
 

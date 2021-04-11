@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
@@ -26,15 +28,15 @@ gem 'bootsnap', require: false
 gem 'rack-cors'
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
 
 # 環境変数管理
 gem 'dotenv-rails'
 
 # devise関連
 gem 'devise'
-gem 'devise_token_auth'
 gem 'devise-i18n'
+gem 'devise_token_auth'
 
 # シリアライズ関連
 gem 'active_model_serializers'
@@ -46,20 +48,20 @@ gem 'active_storage_base64'
 gem 'bundle_outdated_formatter'
 
 # ActiveStorageにて、AWSのS3を利用するため
-gem "aws-sdk-s3", require: false
+gem 'aws-sdk-s3', require: false
 
 # ヘルスチェック用
 gem 'okcomputer'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
-  gem 'rspec-rails'
+  gem 'byebug', platforms: %i[mri mingw x64_mingw]
   gem 'factory_bot_rails'
+  gem 'rspec-rails'
 
   # Debug関連
-  gem 'pry-rails'
   gem 'pry-byebug'
+  gem 'pry-rails'
 
   # N+1問題を検知するgem
   gem 'bullet'
@@ -72,8 +74,8 @@ group :development do
   gem 'spring-watcher-listen'
 
   # Debug関連
-  gem "ruby-debug-ide"
-  gem "debase"
+  gem 'debase'
+  gem 'ruby-debug-ide'
 end
 
 group :test do
@@ -81,7 +83,7 @@ group :test do
   gem 'database_cleaner'
 
   # Test関連
-  gem 'spring-commands-rspec'
   gem 'rubocop-rspec', require: false
   gem 'shoulda-matchers'
+  gem 'spring-commands-rspec'
 end

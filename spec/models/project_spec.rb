@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe Project, type: :model do
@@ -13,12 +15,12 @@ RSpec.describe Project, type: :model do
     let(:user_with_project) { FactoryBot.create(:user, :user_with_projects) }
 
     it '1ユーザーは1プロジェクトを作成できる' do
-      project = Project.new(name: 'test', users: Array.new(1, user))
+      project = described_class.new(name: 'test', users: Array.new(1, user))
       expect(project).to be_valid
     end
 
     it '1ユーザーは2つ以上のプロジェクトを作成できない' do
-      project = Project.new(name: 'test', users: Array.new(1, user_with_project))
+      project = described_class.new(name: 'test', users: Array.new(1, user_with_project))
       project.valid?
       expect(project.errors[:base]).to include('ユーザーが作成できるプロジェクト数の上限を越えているため、作成できません。')
     end

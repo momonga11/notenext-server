@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# ユーザーのモデルクラス
 class UsersProject < ApplicationRecord
   # self.primary_keys = :user_id, :project_id
   belongs_to :user

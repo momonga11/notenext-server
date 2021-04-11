@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# version:1のアプリケーションコントローラー
 class V1::ApplicationController < ActionController::API
   include DeviseTokenAuth::Concerns::SetUserByToken
   include ResponseRenderer
@@ -36,20 +39,20 @@ class V1::ApplicationController < ActionController::API
   #   response_internal_server_error(e)
   # end
 
-  def render_routing_error(_e)
+  def render_routing_error(_error)
     response_bad_request(I18n.t('response_errors.messages.not_routing'))
   end
 
-  def render_parameter_missing(e)
-    response_bad_request(I18n.t('response_errors.messages.parameter_missing', attribute: e.param))
+  def render_parameter_missing(error)
+    response_bad_request(I18n.t('response_errors.messages.parameter_missing', attribute: error.param))
   end
 
-  def render_stale_object_error(e)
-    response_conflict(e.record.model_name.human)
+  def render_stale_object_error(error)
+    response_conflict(error.record.model_name.human)
   end
 
-  def render_record_not_found(e)
-    response_not_found("#{I18n.t("activerecord.models.#{e.model.downcase}")} (#{e.primary_key} : #{e.id}) ")
+  def render_record_not_found(error)
+    response_not_found("#{I18n.t("activerecord.models.#{error.model.downcase}")} (#{error.primary_key} : #{error.id}) ")
   end
 
   def has_lock_version!(params, key)

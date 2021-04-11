@@ -1,5 +1,13 @@
 require: rubocop-rspec
 
+AllCops:
+  # 自動生成されるものはチェック対象から除外する
+  Exclude:
+    - "db/schema.rb"
+    - "db/migrate/*"
+    - "bin/*"
+  NewCops: enable
+
 Style/StringLiterals:
   Enabled: true
   EnforcedStyle: single_quotes
@@ -7,3 +15,73 @@ Style/StringLiterals:
 # 日本語のコメントを許可する
 Style/AsciiComments:
   Enabled: false
+
+# 子クラス、子モジュールの書き方は強制しない。
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+# NamePrefixがisやhasでも、感嘆符がつくメソッドの場合、例外とする。
+Naming/PredicateName:
+  AllowedMethods:
+    - has_lock_version!
+
+# メソッドサイズの制限は少し緩める
+Metrics/AbcSize:
+  Max: 25
+
+# メソッド行数の制限は少し緩める
+Metrics/MethodLength:
+  Max: 20
+
+# ブロック行数制限の除外ファイルを定義する
+Metrics/BlockLength:
+  Max: 60
+  Exclude:
+    - "spec/**/*"
+    - "config/environments/*"
+    - "config/routes.rb"
+
+# ファイルそのもので意味が特定できるものに関しては、ドキュメントコメント不要とする
+Style/Documentation:
+  Exclude:
+    - "config/application.rb"
+
+# 行数制限は少し緩める
+Layout/LineLength:
+  Max: 130
+
+# Expectationsが多くなることを許容する
+RSpec/MultipleExpectations:
+  Max: 6
+
+# shoulda-matchersを利用する関係で、この条件は無効とする
+RSpec/FilePath:
+  Enabled: false
+
+# BooleanSymbolはRSpecで利用するため許容する
+Lint/BooleanSymbol:
+  Enabled: false
+
+# ガード句で書いた方がわかりにくいこともあるので、無効とする
+Style/GuardClause:
+  Enabled: false
+
+# テスト検証のため、let?にて事前処理を実行させることもある。結果的に利用しない変数となるが、許容する。
+RSpec/LetSetup:
+  Enabled: false
+
+# ネスト可能範囲は増やす
+RSpec/NestedGroups:
+  Enabled: false
+
+# テスト内でのインスタンス変数を許容する
+RSpec/InstanceVariable:
+  Enabled: false
+
+# RSpecのヘルパーの上限を緩める
+RSpec/MultipleMemoizedHelpers:
+  Max: 10
+
+# Exampleの長さの上限を緩める
+RSpec/ExampleLength:
+  Max: 10

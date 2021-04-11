@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
@@ -31,7 +33,7 @@ Rails.application.configure do
   config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for NGINX
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = ENV.fetch('ACTIVE_STORAGE_SERVICE') { :local }
+  config.active_storage.service = ENV.fetch('ACTIVE_STORAGE_SERVICE', :local)
 
   # ファイル追加時は上書きではなく、追加とする
   config.active_storage.replace_on_assign_to_many = false
@@ -43,13 +45,13 @@ Rails.application.configure do
   config.action_mailer.default_url_options = if ENV['HOST_PROTOCOL_HTTPS'].present?
                                                {
                                                  host: ENV.fetch('HOST_DEFAULT_URL_HOST'),
-                                                 port: ENV.fetch('HOST_DEFAULT_URL_PORT') { '' },
+                                                 port: ENV.fetch('HOST_DEFAULT_URL_PORT', ''),
                                                  protocol: 'https'
                                                }
                                              else
                                                {
                                                  host: ENV.fetch('HOST_DEFAULT_URL_HOST'),
-                                                 port: ENV.fetch('HOST_DEFAULT_URL_PORT') { '' }
+                                                 port: ENV.fetch('HOST_DEFAULT_URL_PORT', '')
                                                }
                                              end
 
@@ -121,7 +123,7 @@ Rails.application.configure do
   # config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new 'app-name')
 
   if ENV['RAILS_LOG_TO_STDOUT'].present?
-    logger           = ActiveSupport::Logger.new(STDOUT)
+    logger           = ActiveSupport::Logger.new($stdout)
     logger.formatter = config.log_formatter
     config.logger    = ActiveSupport::TaggedLogging.new(logger)
   end
@@ -156,5 +158,5 @@ end
 
 Rails.application.routes.default_url_options = {
   host: ENV.fetch('HOST_DEFAULT_URL_HOST'),
-  port: ENV.fetch('HOST_DEFAULT_URL_PORT') { '' }
+  port: ENV.fetch('HOST_DEFAULT_URL_PORT', '')
 }
