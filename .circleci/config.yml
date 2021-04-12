@@ -1,8 +1,11 @@
 version: 2.1
+orbs:
+  aws-ecr: circleci/aws-ecr@6.15.3
+  aws-ecs: circleci/aws-ecs@2.1.0
 jobs:
   build_and_test:
     docker:
-      - image: circleci/ruby:2.7.3
+      - image: cimg/ruby:2.7.3
         environment:
           RAILS_ENV: test
           DATABASE_DEV_HOST: 127.0.0.1
@@ -55,3 +58,39 @@ workflows:
   main:
     jobs:
       - build_and_test
+      - aws-ecr/build-and-push-image:
+          name: "build_and_push_image_app"
+          repo: "notenext-app"
+          tag: "${CIRCLE_SHA1}"
+          extra-build-args: "--build-arg env=production"
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only:
+                - main
+      - aws-ecr/build-and-push-image:
+          name: "build_and_push_image_web"
+          path: "./nginx"
+          repo: "notenext-web"
+          tag: "${CIRCLE_SHA1}"
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only:
+                - main
+      - aws-ecs/deploy-service-update:
+          cluster-name: "notenext-cluster"
+          family: "notenext-api"
+          service-name: "notenext-service"
+          container-image-name-updates: "\
+            container=notenext-app,image-and-tag=${AWS_ECR_ACCOUNT_URL}/notenext-app:${CIRCLE_SHA1},\
+            container=notenext-web,image-and-tag=${AWS_ECR_ACCOUNT_URL}/notenext-web:${CIRCLE_SHA1}"
+          requires:
+            - build_and_push_image_app
+            - build_and_push_image_web
+          filters:
+            branches:
+              only:
+                - main
