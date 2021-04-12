@@ -42,3 +42,6 @@
 
 # インテリセンス関連
 .solargraph.yml
+
+# rbenvでRubyのバージョンを固定するためのファイル
+.ruby-version
