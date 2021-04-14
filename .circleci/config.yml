@@ -32,6 +32,9 @@ jobs:
               && sudo apt-get clean \
               && sudo rm -rf /var/lib/apt/lists/*
       - run:
+          name: bundle/configの設定
+          command: bundle config set path 'vendor/bundle' && bundle config set deployment 'true'
+      - run:
           name: gem依存関係のインストール
           command: bundle check || bundle install
       - save_cache:

@@ -1,8 +1,10 @@
 require: rubocop-rspec
 
 AllCops:
+  TargetRubyVersion: 2.7.3
   # 自動生成されるものはチェック対象から除外する
   Exclude:
+    - "vendor/**/*"
     - "db/schema.rb"
     - "db/migrate/*"
     - "bin/*"
