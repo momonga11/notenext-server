@@ -22,8 +22,8 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - rails-bundle-v3-{{ checksum "Gemfile.lock" }}
-            - rails-bundle-v3-
+            - rails-bundle-v4-{{ checksum "Gemfile.lock" }}
+            - rails-bundle-v4-
       - run:
           name: 必要なパッケージのインストール
           command: |
@@ -38,7 +38,7 @@ jobs:
           name: gem依存関係のインストール
           command: bundle check || bundle install
       - save_cache:
-          key: rails-bundle-v3-{{ checksum "Gemfile.lock" }}
+          key: rails-bundle-v4-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
       - run:
