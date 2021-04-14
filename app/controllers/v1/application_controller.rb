@@ -22,7 +22,7 @@ class V1::ApplicationController < ActionController::API
   end
 
   def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:sign_up, keys: %i[name])
+    devise_parameter_sanitizer.permit(:sign_up, keys: %i[name uid])
     devise_parameter_sanitizer.permit(:account_update,
                                       keys: [:email, :name, { avatar: %i[data filename content_type identify] }])
   end

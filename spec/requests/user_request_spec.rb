@@ -102,14 +102,9 @@ RSpec.describe 'Users', type: :request do
         end.to change(User.where(name: user_attributes[:name]), :count).by(1)
         expect(response).to have_http_status(:ok)
 
-        # 認証を実行することで有効になる
+        # uidが設定されていることを確認する
         user_created = User.find(json_parse_body(response)[:data][:id])
-        expect(user_created.uid).to eq ''
-
-        get v1_auth_confirmation_path, params: { confirmation_token: user_created.confirmation_token }
-
-        # 認証を実行後にuidが設定されていることを確認する
-        expect(User.find(user.id).uid).not_to eq ''
+        expect(user_created.uid).to eq user_attributes[:uid]
       end
 
       it 'emailの重複ユーザーがいる場合、作成できない' do
