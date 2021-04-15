@@ -49,6 +49,45 @@ RSpec.describe 'Notes', type: :request do
               expect(json_parse_body(response)[:description]).to eq folder.description
             end
 
+            context 'with pagination' do
+              subject :get_notes_with_association_and_paging do
+                get v1_project_folder_notes_path(
+                  project_id: user.projects[0].id,
+                  folder_id: folder_id
+                ), params: { with_association: with_association, page: page }, headers: auth_headers
+                response
+              end
+
+              shared_examples 'get paging note' do |notes_index|
+                it do
+                  expect(get_notes_with_association_and_paging).to have_http_status(:ok)
+                  expect(json_parse_body(response)[:notes].map { |note| note[:id] }[0]).to eq folder.notes[notes_index].id
+                  expect(json_parse_body(response)[:notes].map { |note| note[:id] }.length).to eq 1
+                end
+              end
+
+              before do
+                @per_page = Kaminari.config.default_per_page
+                Kaminari.config.default_per_page = 1
+              end
+
+              after do
+                Kaminari.config.default_per_page = @per_page
+              end
+
+              context 'when page=1' do
+                let(:page) { 1 }
+
+                it_behaves_like 'get paging note', 0
+              end
+
+              context 'when page not 1' do
+                let(:page) { 2 }
+
+                it_behaves_like 'get paging note', 1
+              end
+            end
+
             context 'when フォルダIDが存在しない' do
               let(:folder_id) { -1 }
 
@@ -66,6 +105,45 @@ RSpec.describe 'Notes', type: :request do
               expect(get_notes_with_association).to have_http_status(:ok)
               expect(json_parse_body(response).map { |note| note[:id] }).to eq folder.notes.ids
               expect(json_parse_body(response).map { |note| note[:id] }.length).to eq 2
+            end
+
+            context 'with pagination' do
+              subject :get_notes_paging do
+                get v1_project_folder_notes_path(
+                  project_id: user.projects[0].id,
+                  folder_id: folder_id
+                ), params: { with_association: with_association, page: page }, headers: auth_headers
+                response
+              end
+
+              shared_examples 'get paging note' do |notes_index|
+                it do
+                  expect(get_notes_paging).to have_http_status(:ok)
+                  expect(json_parse_body(response)[0][:id]).to eq folder.notes[notes_index].id
+                  expect(json_parse_body(response).length).to eq 1
+                end
+              end
+
+              before do
+                @per_page = Kaminari.config.default_per_page
+                Kaminari.config.default_per_page = 1
+              end
+
+              after do
+                Kaminari.config.default_per_page = @per_page
+              end
+
+              context 'when page=1' do
+                let(:page) { 1 }
+
+                it_behaves_like 'get paging note', 0
+              end
+
+              context 'when page not 1' do
+                let(:page) { 2 }
+
+                it_behaves_like 'get paging note', 1
+              end
             end
 
             context 'when フォルダIDが存在しない場合' do
@@ -94,6 +172,45 @@ RSpec.describe 'Notes', type: :request do
               expect(get_notes).to have_http_status(:ok)
               expect(json_parse_body(response).map { |note| note[:id] }).to eq folder.notes.ids
               expect(json_parse_body(response).map { |note| note[:id] }.length).to eq 2
+            end
+
+            context 'with pagination' do
+              subject :get_notes_paging do
+                get v1_project_folder_notes_path(
+                  project_id: user.projects[0].id,
+                  folder_id: folder_id
+                ), params: { page: page }, headers: auth_headers
+                response
+              end
+
+              shared_examples 'get paging note' do |notes_index|
+                it do
+                  expect(get_notes_paging).to have_http_status(:ok)
+                  expect(json_parse_body(response)[0][:id]).to eq folder.notes[notes_index].id
+                  expect(json_parse_body(response).length).to eq 1
+                end
+              end
+
+              before do
+                @per_page = Kaminari.config.default_per_page
+                Kaminari.config.default_per_page = 1
+              end
+
+              after do
+                Kaminari.config.default_per_page = @per_page
+              end
+
+              context 'when page=1' do
+                let(:page) { 1 }
+
+                it_behaves_like 'get paging note', 0
+              end
+
+              context 'when page not 1' do
+                let(:page) { 2 }
+
+                it_behaves_like 'get paging note', 1
+              end
             end
           end
 
