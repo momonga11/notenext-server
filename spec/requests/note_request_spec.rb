@@ -272,6 +272,51 @@ RSpec.describe 'Notes', type: :request do
           expect(json_parse_body(response).map { |note| note[:id] }).to eq(folder.notes.ids + folder2.notes.ids)
           expect(json_parse_body(response).map { |note| note[:id] }.length).to eq 2
         end
+
+        context 'with pagination', focus: :true do
+          subject :get_notes_paging do
+            get v1_project_notes_path(
+              project_id: note.project_id
+            ), params: { page: page }, headers: auth_headers
+            response
+          end
+
+          shared_examples 'get paging note' do |_notes_index|
+            it do
+              expect(get_notes_paging).to have_http_status(:ok)
+              expect(json_parse_body(response).length).to eq 1
+            end
+          end
+
+          before do
+            @per_page = Kaminari.config.default_per_page
+            Kaminari.config.default_per_page = 1
+          end
+
+          after do
+            Kaminari.config.default_per_page = @per_page
+          end
+
+          context 'when page=1' do
+            let(:page) { 1 }
+
+            it_behaves_like 'get paging note', 0
+            it '1ページ目のノートが取得できること' do
+              expect(get_notes_paging).to have_http_status(:ok)
+              expect(json_parse_body(response)[0][:id]).to eq folder.notes[0].id
+            end
+          end
+
+          context 'when page not 1' do
+            let(:page) { 2 }
+
+            it_behaves_like 'get paging note', 1
+            it '2ページ目のノートが取得できること' do
+              expect(get_notes_paging).to have_http_status(:ok)
+              expect(json_parse_body(response)[0][:id]).to eq folder2.notes[0].id
+            end
+          end
+        end
       end
     end
 
@@ -391,7 +436,7 @@ RSpec.describe 'Notes', type: :request do
     end
 
     context 'when 認証されている' do
-      it 'ユーザーが所属しているプロジェクトの場合、ノートが作成できる' do
+      it 'ユーザーが所属しているプロジェクトの場合、ノー���が作成できる' do
         expect do
           post v1_project_folder_notes_path(
             project_id: user.projects[0].id,
@@ -401,7 +446,7 @@ RSpec.describe 'Notes', type: :request do
         end.to change(folder.notes, :count).by(1)
       end
 
-      it 'ユーザーが所属していないプロジェクトの場合、ノートは作成できない' do
+      it 'ユーザーが所属していないプロジェクトの場合、ノ���トは作成できない' do
         expect do
           post v1_project_folder_notes_path(
             project_id: user_dummy.projects[0].id,
