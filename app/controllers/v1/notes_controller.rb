@@ -10,18 +10,17 @@ class V1::NotesController < V1::ApplicationController
 
   # GET /notes
   def index
-    # TODO: 無限スクロール対応
     # 特定のパラメータが渡った時、初期描画用にプロジェクト、フォルダー、ユーザーの情報を抜粋して渡す。
     if params.key?(:with_association) && ActiveRecord::Type::Boolean.new.cast(params[:with_association])
-      render json: @folder, serializer: FolderWithAssociationSerializer
+      render json: @folder, serializer: FolderWithAssociationSerializer, page: params[:page]
     else
-      render json: @folder.notes
+      render json: @folder.notes.page(params[:page])
     end
   end
 
   # GET all/notes
   def all
-    render json: @project.notes.order(created_at: :desc)
+    render json: @project.notes.page(params[:page]).order(created_at: :desc)
   end
 
   # GET /notes/1

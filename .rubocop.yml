@@ -82,7 +82,7 @@ RSpec/InstanceVariable:
 
 # RSpecのヘルパーの上限を緩める
 RSpec/MultipleMemoizedHelpers:
-  Max: 10
+  Max: 15
 
 # Exampleの長さの上限を緩める
 RSpec/ExampleLength:
