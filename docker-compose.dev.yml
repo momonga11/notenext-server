@@ -35,6 +35,9 @@ services:
       - db
     volumes:
       - .:/app
+    # 標準入力を可能にする設定
+    stdin_open: true
+    tty: true
   smtp:
     image: schickling/mailcatcher
     ports:
