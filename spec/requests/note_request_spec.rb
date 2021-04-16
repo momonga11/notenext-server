@@ -24,7 +24,7 @@ RSpec.describe 'Notes', type: :request do
     end
 
     context 'when 認証されている' do
-      let!(:note2) { FactoryBot.create(:note, project: user.projects[0], folder: folder) }
+      let!(:note2) { FactoryBot.create(:note2, project: user.projects[0], folder: folder) }
 
       context 'when ユーザーが所属しているプロジェクト' do
         context 'when クエリパラメーターにwith_associationが存在する' do
@@ -88,6 +88,108 @@ RSpec.describe 'Notes', type: :request do
               end
             end
 
+            context 'when sort by' do
+              subject :get_notes_with_association_and_sort do
+                get v1_project_folder_notes_path(
+                  project_id: user.projects[0].id,
+                  folder_id: folder_id
+                ), params: { with_association: with_association, page: page, sort: sort }, headers: auth_headers
+                response
+              end
+
+              let(:page) { 1 }
+
+              context 'when sort asc' do
+                let(:sort) { 'title:asc' }
+
+                it 'titleの昇順に並んだNoteが取得できる' do
+                  expect(get_notes_with_association_and_sort).to have_http_status(:ok)
+                  titles = json_parse_body(response)[:notes].map { |note| note[:title] }
+                  expect(titles[0]).to eq note.title
+                  expect(titles[1]).to eq note2.title
+                end
+              end
+
+              context 'when sort desc' do
+                let(:sort) { 'title:desc' }
+
+                it 'titleの降順に並んだNoteが取得できる' do
+                  expect(get_notes_with_association_and_sort).to have_http_status(:ok)
+                  titles = json_parse_body(response)[:notes].map { |note| note[:title] }
+                  expect(titles[0]).to eq note2.title
+                  expect(titles[1]).to eq note.title
+                end
+              end
+
+              describe 'default sort' do
+                shared_examples 'dafault sort id:asc' do
+                  it do
+                    expect(get_notes_with_association_and_sort).to have_http_status(:ok)
+                    ids = json_parse_body(response)[:notes].map { |note| note[:id] }
+                    expect(ids[0]).to eq note2.id
+                    expect(ids[1]).to eq note.id
+                  end
+                end
+
+                context 'when sort is nothing' do
+                  let(:sort) { '' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort column is nothing' do
+                  let(:sort) { ':asc' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort column is incorrect' do
+                  let(:sort) { 'ida:asc' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort order is nothing' do
+                  let(:sort) { 'ida' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort order do not exist' do
+                  let(:sort) { 'ida:' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort order is incorrect' do
+                  let(:sort) { 'ida:asac' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+              end
+
+              context 'when sort and pagination' do
+                before do
+                  @per_page = Kaminari.config.default_per_page
+                  Kaminari.config.default_per_page = 1
+                end
+
+                after do
+                  Kaminari.config.default_per_page = @per_page
+                end
+
+                let(:page) { 2 }
+                let(:sort) { 'title:asc' }
+
+                it 'titleの昇順に並んだNoteの2ページ目が取得できる' do
+                  expect(get_notes_with_association_and_sort).to have_http_status(:ok)
+                  titles = json_parse_body(response)[:notes].map { |note| note[:title] }
+                  expect(titles[0]).to eq note2.title
+                  expect(titles.length).to eq 1
+                end
+              end
+            end
+
             context 'when フォルダIDが存在しない' do
               let(:folder_id) { -1 }
 
@@ -143,6 +245,108 @@ RSpec.describe 'Notes', type: :request do
                 let(:page) { 2 }
 
                 it_behaves_like 'get paging note', 1
+              end
+            end
+
+            context 'when sort by' do
+              subject :get_notes_with_association_and_sort do
+                get v1_project_folder_notes_path(
+                  project_id: user.projects[0].id,
+                  folder_id: folder_id
+                ), params: { with_association: with_association, page: page, sort: sort }, headers: auth_headers
+                response
+              end
+
+              let(:page) { 1 }
+
+              context 'when sort asc' do
+                let(:sort) { 'title:asc' }
+
+                it 'titleの昇順に並んだNoteが取得できる' do
+                  expect(get_notes_with_association_and_sort).to have_http_status(:ok)
+                  titles = json_parse_body(response).map { |note| note[:title] }
+                  expect(titles[0]).to eq note.title
+                  expect(titles[1]).to eq note2.title
+                end
+              end
+
+              context 'when sort desc' do
+                let(:sort) { 'title:desc' }
+
+                it 'titleの降順に並んだNoteが取得できる' do
+                  expect(get_notes_with_association_and_sort).to have_http_status(:ok)
+                  titles = json_parse_body(response).map { |note| note[:title] }
+                  expect(titles[0]).to eq note2.title
+                  expect(titles[1]).to eq note.title
+                end
+              end
+
+              describe 'default sort' do
+                shared_examples 'dafault sort id:asc' do
+                  it do
+                    expect(get_notes_with_association_and_sort).to have_http_status(:ok)
+                    ids = json_parse_body(response).map { |note| note[:id] }
+                    expect(ids[0]).to eq note2.id
+                    expect(ids[1]).to eq note.id
+                  end
+                end
+
+                context 'when sort is nothing' do
+                  let(:sort) { '' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort column is nothing' do
+                  let(:sort) { ':asc' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort column is incorrect' do
+                  let(:sort) { 'ida:asc' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort order is nothing' do
+                  let(:sort) { 'ida' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort order do not exist' do
+                  let(:sort) { 'ida:' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort order is incorrect' do
+                  let(:sort) { 'ida:asac' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+              end
+
+              context 'when sort and pagination' do
+                before do
+                  @per_page = Kaminari.config.default_per_page
+                  Kaminari.config.default_per_page = 1
+                end
+
+                after do
+                  Kaminari.config.default_per_page = @per_page
+                end
+
+                let(:page) { 2 }
+                let(:sort) { 'title:asc' }
+
+                it 'titleの昇順に並んだNoteの2ページ目が取得できる' do
+                  expect(get_notes_with_association_and_sort).to have_http_status(:ok)
+                  titles = json_parse_body(response).map { |note| note[:title] }
+                  expect(titles[0]).to eq note2.title
+                  expect(titles.length).to eq 1
+                end
               end
             end
 
@@ -212,6 +416,108 @@ RSpec.describe 'Notes', type: :request do
                 it_behaves_like 'get paging note', 1
               end
             end
+
+            context 'when sort by' do
+              subject :get_notes_sort do
+                get v1_project_folder_notes_path(
+                  project_id: user.projects[0].id,
+                  folder_id: folder_id
+                ), params: { page: page, sort: sort }, headers: auth_headers
+                response
+              end
+
+              let(:page) { 1 }
+
+              context 'when sort asc' do
+                let(:sort) { 'title:asc' }
+
+                it 'titleの昇順に並んだNoteが取得できる' do
+                  expect(get_notes_sort).to have_http_status(:ok)
+                  titles = json_parse_body(response).map { |note| note[:title] }
+                  expect(titles[0]).to eq note.title
+                  expect(titles[1]).to eq note2.title
+                end
+              end
+
+              context 'when sort desc' do
+                let(:sort) { 'title:desc' }
+
+                it 'titleの降順に並んだNoteが取得できる' do
+                  expect(get_notes_sort).to have_http_status(:ok)
+                  titles = json_parse_body(response).map { |note| note[:title] }
+                  expect(titles[0]).to eq note2.title
+                  expect(titles[1]).to eq note.title
+                end
+              end
+
+              describe 'default sort' do
+                shared_examples 'dafault sort id:asc' do
+                  it do
+                    expect(get_notes_sort).to have_http_status(:ok)
+                    ids = json_parse_body(response).map { |note| note[:id] }
+                    expect(ids[0]).to eq note2.id
+                    expect(ids[1]).to eq note.id
+                  end
+                end
+
+                context 'when sort is nothing' do
+                  let(:sort) { '' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort column is nothing' do
+                  let(:sort) { ':asc' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort column is incorrect' do
+                  let(:sort) { 'ida:asc' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort order is nothing' do
+                  let(:sort) { 'ida' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort order do not exist' do
+                  let(:sort) { 'ida:' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+
+                context 'when sort order is incorrect' do
+                  let(:sort) { 'ida:asac' }
+
+                  it_behaves_like 'dafault sort id:asc'
+                end
+              end
+
+              context 'when sort and pagination' do
+                before do
+                  @per_page = Kaminari.config.default_per_page
+                  Kaminari.config.default_per_page = 1
+                end
+
+                after do
+                  Kaminari.config.default_per_page = @per_page
+                end
+
+                let(:page) { 2 }
+                let(:sort) { 'title:asc' }
+
+                it 'titleの昇順に並んだNoteの2ページ目が取得できる' do
+                  expect(get_notes_sort).to have_http_status(:ok)
+                  titles = json_parse_body(response).map { |note| note[:title] }
+                  expect(titles[0]).to eq note2.title
+                  expect(titles.length).to eq 1
+                end
+              end
+            end
           end
 
           context 'when フォルダIDが存在しない場合' do
@@ -273,7 +579,7 @@ RSpec.describe 'Notes', type: :request do
           expect(json_parse_body(response).map { |note| note[:id] }.length).to eq 2
         end
 
-        context 'with pagination', focus: :true do
+        context 'with pagination' do
           subject :get_notes_paging do
             get v1_project_notes_path(
               project_id: note.project_id
@@ -436,7 +742,7 @@ RSpec.describe 'Notes', type: :request do
     end
 
     context 'when 認証されている' do
-      it 'ユーザーが所属しているプロジェクトの場合、ノー���が作成できる' do
+      it 'ユーザーが所属しているプロジェクトの場合、ノートが作成できる' do
         expect do
           post v1_project_folder_notes_path(
             project_id: user.projects[0].id,
@@ -446,7 +752,7 @@ RSpec.describe 'Notes', type: :request do
         end.to change(folder.notes, :count).by(1)
       end
 
-      it 'ユーザーが所属していないプロジェクトの場合、ノ���トは作成できない' do
+      it 'ユーザーが所属していないプロジェクトの場合、ノートは作成できない' do
         expect do
           post v1_project_folder_notes_path(
             project_id: user_dummy.projects[0].id,
