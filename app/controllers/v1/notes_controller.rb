@@ -12,9 +12,9 @@ class V1::NotesController < V1::ApplicationController
   def index
     # 特定のパラメータが渡った時、初期描画用にプロジェクト、フォルダー、ユーザーの情報を抜粋して渡す。
     if params.key?(:with_association) && ActiveRecord::Type::Boolean.new.cast(params[:with_association])
-      render json: @folder, serializer: FolderWithAssociationSerializer, page: params[:page]
+      render json: @folder, serializer: FolderWithAssociationSerializer, sort_by: create_sort_by, page: params[:page]
     else
-      render json: @folder.notes.page(params[:page])
+      render json: @folder.notes.order(create_sort_by).page(params[:page])
     end
   end
 
@@ -105,5 +105,21 @@ class V1::NotesController < V1::ApplicationController
   def set_folder
     # フォルダの存在チェックも兼ねる
     @folder = @project.folders.find(params[:folder_id])
+  end
+
+  # sortのパラメーターからソートの文字列を構築する
+  def create_sort_by
+    return unless params[:sort]
+
+    # sort pamamは、'カラム名:ソート順(asc or desc)'という形式を想定している。
+    sort_column, sort_order = params[:sort].split(':')
+
+    # SQLインジェクション対策
+    return unless Note.column_names.include?(sort_column)
+
+    # 並び順が指定なし、あるは誤っている場合は、デフォルトとして昇順を設定する
+    sort_order = 'asc' if !sort_order || (sort_order != 'asc' && sort_order != 'desc')
+
+    "#{sort_column} #{sort_order}"
   end
 end
