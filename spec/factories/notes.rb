@@ -14,5 +14,16 @@ FactoryBot.define do
     text { '自分は東北の田舎に生れましたので、汽車をはじめて見たのは、よほど大きくなってからでした' }
     htmltext { '<div>自分は東北の田舎に生れましたので、</div><div>汽車をはじめて見たのは、よほど大きくなってからでした</div>' }
     lock_version { 0 }
+    association :project
+    association :folder
+  end
+
+  factory :note3, class: 'Note' do
+    title { 'testNoteT3' }
+    text { '自分は北陸の田舎に生れました' }
+    htmltext { '' }
+    lock_version { 0 }
+    association :project
+    association :folder
   end
 end
