@@ -144,4 +144,20 @@ RSpec.describe Note, type: :model do
       end
     end
   end
+
+  describe 'ノートを曖昧検索する' do
+    let!(:note) { FactoryBot.create(:note) }
+    let!(:note2) { FactoryBot.create(:note2) }
+    let!(:note3) { FactoryBot.create(:note3) }
+
+    it 'titleを部分一致検索できること' do
+      expect(described_class.search_ambiguous_text('NoteT')[0].id).to be note3.id
+    end
+
+    it 'textを部分一致検索できること' do
+      notes = described_class.search_ambiguous_text('田舎')
+      expect(notes).to include note2, note3
+      expect(notes).not_to include note
+    end
+  end
 end

@@ -190,6 +190,64 @@ RSpec.describe 'Notes', type: :request do
               end
             end
 
+            context 'when text search' do
+              subject :get_notes_with_association_and_search do
+                get v1_project_folder_notes_path(
+                  project_id: user.projects[0].id,
+                  folder_id: folder_id
+                ), params: { with_association: with_association, page: page, sort: sort, search: search }, headers: auth_headers
+                response
+              end
+
+              let!(:note3) { FactoryBot.create(:note3, project: user.projects[0], folder: folder) }
+              let(:page) { 1 }
+              let(:sort) { '' }
+
+              context 'when title 部分一致' do
+                let(:search) { 'NoteT' }
+
+                it '部分一致検索できること' do
+                  expect(get_notes_with_association_and_search).to have_http_status(:ok)
+                  note_ids = json_parse_body(response)[:notes].map { |note| note[:id] }
+                  expect(note_ids).to include note3.id
+                  expect(note_ids).not_to include note.id, note2.id
+                end
+              end
+
+              context 'when text 部分一致' do
+                let(:search) { '田舎' }
+
+                it '部分一致検索できること' do
+                  expect(get_notes_with_association_and_search).to have_http_status(:ok)
+                  note_ids = json_parse_body(response)[:notes].map { |note| note[:id] }
+                  expect(note_ids).to include note2.id, note3.id
+                  expect(note_ids).not_to include note.id
+                end
+              end
+
+              context 'when sort and pagination' do
+                before do
+                  @per_page = Kaminari.config.default_per_page
+                  Kaminari.config.default_per_page = 1
+                end
+
+                after do
+                  Kaminari.config.default_per_page = @per_page
+                end
+
+                let(:page) { 2 }
+                let(:sort) { 'title:desc' }
+                let(:search) { '田舎' }
+
+                it '部分一致検索できること' do
+                  expect(get_notes_with_association_and_search).to have_http_status(:ok)
+                  note_ids = json_parse_body(response)[:notes].map { |note| note[:id] }
+                  expect(note_ids).to include note2.id
+                  expect(note_ids).not_to include note.id, note3.id
+                end
+              end
+            end
+
             context 'when フォルダIDが存在しない' do
               let(:folder_id) { -1 }
 
@@ -346,6 +404,64 @@ RSpec.describe 'Notes', type: :request do
                   titles = json_parse_body(response).map { |note| note[:title] }
                   expect(titles[0]).to eq note2.title
                   expect(titles.length).to eq 1
+                end
+              end
+            end
+
+            context 'when text search' do
+              subject :get_notes_with_association_and_search do
+                get v1_project_folder_notes_path(
+                  project_id: user.projects[0].id,
+                  folder_id: folder_id
+                ), params: { with_association: with_association, page: page, sort: sort, search: search }, headers: auth_headers
+                response
+              end
+
+              let!(:note3) { FactoryBot.create(:note3, project: user.projects[0], folder: folder) }
+              let(:page) { 1 }
+              let(:sort) { '' }
+
+              context 'when title 部分一致' do
+                let(:search) { 'NoteT' }
+
+                it '部分一致検索できること' do
+                  expect(get_notes_with_association_and_search).to have_http_status(:ok)
+                  note_ids = json_parse_body(response).map { |note| note[:id] }
+                  expect(note_ids).to include note3.id
+                  expect(note_ids).not_to include note.id, note2.id
+                end
+              end
+
+              context 'when text 部分一致' do
+                let(:search) { '田舎' }
+
+                it '部分一致検索できること' do
+                  expect(get_notes_with_association_and_search).to have_http_status(:ok)
+                  note_ids = json_parse_body(response).map { |note| note[:id] }
+                  expect(note_ids).to include note2.id, note3.id
+                  expect(note_ids).not_to include note.id
+                end
+              end
+
+              context 'when sort and pagination' do
+                before do
+                  @per_page = Kaminari.config.default_per_page
+                  Kaminari.config.default_per_page = 1
+                end
+
+                after do
+                  Kaminari.config.default_per_page = @per_page
+                end
+
+                let(:page) { 2 }
+                let(:sort) { 'title:desc' }
+                let(:search) { '田舎' }
+
+                it '部分一致検索できること' do
+                  expect(get_notes_with_association_and_search).to have_http_status(:ok)
+                  note_ids = json_parse_body(response).map { |note| note[:id] }
+                  expect(note_ids).to include note2.id
+                  expect(note_ids).not_to include note.id, note3.id
                 end
               end
             end
@@ -518,6 +634,64 @@ RSpec.describe 'Notes', type: :request do
                 end
               end
             end
+
+            context 'when text search' do
+              subject :get_notes_with_association_and_search do
+                get v1_project_folder_notes_path(
+                  project_id: user.projects[0].id,
+                  folder_id: folder_id
+                ), params: { page: page, sort: sort, search: search }, headers: auth_headers
+                response
+              end
+
+              let!(:note3) { FactoryBot.create(:note3, project: user.projects[0], folder: folder) }
+              let(:page) { 1 }
+              let(:sort) { '' }
+
+              context 'when title 部分一致' do
+                let(:search) { 'NoteT' }
+
+                it '部分一致検索できること' do
+                  expect(get_notes_with_association_and_search).to have_http_status(:ok)
+                  note_ids = json_parse_body(response).map { |note| note[:id] }
+                  expect(note_ids).to include note3.id
+                  expect(note_ids).not_to include note.id, note2.id
+                end
+              end
+
+              context 'when text 部分一致' do
+                let(:search) { '田舎' }
+
+                it '部分一致検索できること' do
+                  expect(get_notes_with_association_and_search).to have_http_status(:ok)
+                  note_ids = json_parse_body(response).map { |note| note[:id] }
+                  expect(note_ids).to include note2.id, note3.id
+                  expect(note_ids).not_to include note.id
+                end
+              end
+
+              context 'when sort and pagination' do
+                before do
+                  @per_page = Kaminari.config.default_per_page
+                  Kaminari.config.default_per_page = 1
+                end
+
+                after do
+                  Kaminari.config.default_per_page = @per_page
+                end
+
+                let(:page) { 2 }
+                let(:sort) { 'title:desc' }
+                let(:search) { '田舎' }
+
+                it '部分一致検索できること' do
+                  expect(get_notes_with_association_and_search).to have_http_status(:ok)
+                  note_ids = json_parse_body(response).map { |note| note[:id] }
+                  expect(note_ids).to include note2.id
+                  expect(note_ids).not_to include note.id, note3.id
+                end
+              end
+            end
           end
 
           context 'when フォルダIDが存在しない場合' do
@@ -620,6 +794,62 @@ RSpec.describe 'Notes', type: :request do
             it '2ページ目のノートが取得できること' do
               expect(get_notes_paging).to have_http_status(:ok)
               expect(json_parse_body(response)[0][:id]).to eq folder2.notes[0].id
+            end
+          end
+        end
+
+        context 'when text search' do
+          subject :get_notes_all_page_and_search do
+            get v1_project_notes_path(
+              project_id: note.project_id
+            ), params: { page: page, search: search }, headers: auth_headers
+            response
+          end
+
+          let!(:folder3) { FactoryBot.create(:folder, project: user.projects[0]) }
+          let!(:note3) { FactoryBot.create(:note3, project: user.projects[0], folder: folder3) }
+          let(:page) { 1 }
+
+          context 'when title 部分一致' do
+            let(:search) { 'NoteT' }
+
+            it '部分一致検索できること' do
+              expect(get_notes_all_page_and_search).to have_http_status(:ok)
+              note_ids = json_parse_body(response).map { |note| note[:id] }
+              expect(note_ids).to include folder3.notes[0].id
+              expect(note_ids).not_to include folder.notes[0].id, folder2.notes[0].id
+            end
+          end
+
+          context 'when text 部分一致' do
+            let(:search) { '田舎' }
+
+            it '部分一致検索できること' do
+              expect(get_notes_all_page_and_search).to have_http_status(:ok)
+              note_ids = json_parse_body(response).map { |note| note[:id] }
+              expect(note_ids).to include folder3.notes[0].id
+              expect(note_ids).not_to include folder.notes[0].id, folder2.notes[0].id
+            end
+          end
+
+          context 'when pagination' do
+            before do
+              @per_page = Kaminari.config.default_per_page
+              Kaminari.config.default_per_page = 1
+            end
+
+            after do
+              Kaminari.config.default_per_page = @per_page
+            end
+
+            let(:page) { 2 }
+            let(:search) { '生涯' }
+
+            it '部分一致検索できること' do
+              expect(get_notes_all_page_and_search).to have_http_status(:ok)
+              note_ids = json_parse_body(response).map { |note| note[:id] }
+              expect(note_ids).to include folder2.notes[0].id
+              expect(note_ids).not_to include folder.notes[0].id, folder3.notes[0].id
             end
           end
         end

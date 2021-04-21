@@ -9,7 +9,18 @@ class V1::FoldersController < V1::ApplicationController
 
   # GET /folders
   def index
-    @folders = @project.folders
+    # 特定のパラメータが指定されている場合、ノートが紐づくフォルダのみ取得する（ノート検索用のパラメータも受け取れるようにする）
+    unless params.key?(:note) && ActiveRecord::Type::Boolean.new.cast(params[:note])
+      render json: @project.folders
+      return
+    end
+
+    @folders = if params.key?(:search) && params[:search]
+                 @project.folders.joins(:notes).merge(Note.search_ambiguous_text(params[:search])).distinct.order(:id)
+               else
+                 @project.folders.joins(:notes).distinct.order(:id)
+               end
+
     render json: @folders
   end
 

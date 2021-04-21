@@ -11,6 +11,11 @@ class Note < ApplicationRecord
   validate :image_type, on: %i[update create], if: :images_attached?
   after_save :purge_images, if: %i[saved_change_to_htmltext? images_attached?]
 
+  # テキストカラムの曖昧検索を実行する
+  def self.search_ambiguous_text(text)
+    where('title like ?', "%#{text}%").or(Note.where('text like ?', "%#{text}%"))
+  end
+
   private
 
   after_destroy do |note|

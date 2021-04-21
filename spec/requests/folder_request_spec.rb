@@ -31,6 +31,32 @@ RSpec.describe 'Folders', type: :request do
         get v1_project_folders_path(project_id: folder_dummy.project.id), headers: auth_headers
         expect(response).to have_http_status(:forbidden)
       end
+
+      context 'when params note' do
+        let!(:folder2) { FactoryBot.create(:folder2, project: user.projects[0]) }
+        let!(:note) { FactoryBot.create(:note, project: user.projects[0], folder: folder2) }
+
+        it 'ノートが紐づくフォルダのみ取得できる' do
+          get v1_project_folders_path(project_id: folder.project.id), params: { note: true }, headers: auth_headers
+          folders = json_parse_body(response).map { |folder| folder[:id] }
+          expect(folders).to include folder2.id
+          expect(folders).not_to include folder.id
+        end
+
+        context 'when params note and search' do
+          let!(:folder3) { FactoryBot.create(:folder2, project: user.projects[0]) }
+          let!(:note2) { FactoryBot.create(:note2, project: user.projects[0], folder: folder3) }
+          let(:search) { '田舎' }
+
+          it 'params:search の条件に該当するノートが紐づくフォルダのみ取得できる' do
+            get v1_project_folders_path(project_id: folder.project.id), params: { note: true, search: search },
+                                                                        headers: auth_headers
+            folders = json_parse_body(response).map { |folder| folder[:id] }
+            expect(folders).to include folder3.id
+            expect(folders).not_to include folder.id, folder2.id
+          end
+        end
+      end
     end
   end
 
