@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# プロジェクト関連の情報をサニタイズするクラス
+# プロジェクト関連の情報をシリアライズするクラス
 class ProjectWithAssociationSerializer < ActiveModel::Serializer
   include Rails.application.routes.url_helpers
 
