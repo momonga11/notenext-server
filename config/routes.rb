@@ -5,7 +5,9 @@ Rails.application.routes.draw do
     resources :projects, only: %i[index show create update destroy] do
       get 'notes', to: 'notes#all'
       put 'notes/:id/images/attach', to: 'notes#attach_image', as: :note_image_attach
-      resources :notes, only: :show
+      resources :notes, only: :show do
+        resources :tasks, only: %i[create update destroy]
+      end
       resources :folders, only: %i[index show create update destroy] do
         resources :notes
       end

@@ -29,7 +29,7 @@ Naming/PredicateName:
 
 # メソッドサイズの制限は少し緩める
 Metrics/AbcSize:
-  Max: 26
+  Max: 27
 
 # メソッド行数の制限は少し緩める
 Metrics/MethodLength:

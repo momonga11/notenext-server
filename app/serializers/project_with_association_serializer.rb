@@ -17,5 +17,9 @@ class ProjectWithAssociationSerializer < ActiveModel::Serializer
     response_data
   end
 
-  has_many :folders, serializer: FolderNameSerializer
+  has_many :folders, serializer: FolderWithTaskCountSerializer
+
+  def folders
+    object.folders.select_tasks_count
+  end
 end

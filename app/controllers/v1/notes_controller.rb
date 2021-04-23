@@ -12,10 +12,11 @@ class V1::NotesController < V1::ApplicationController
   def index
     # 特定のパラメータが渡った時、初期描画用にプロジェクト、フォルダー、ユーザーの情報を抜粋して渡す。
     if params.key?(:with_association) && ActiveRecord::Type::Boolean.new.cast(params[:with_association])
-      render json: @folder, serializer: FolderWithAssociationSerializer, sort_by: create_sort_by, page: params[:page],
-             search: params[:search]
+      render json: @folder, serializer: FolderWithAssociationSerializer,
+             include: { notes: [:task] },
+             sort_by: create_sort_by, page: params[:page], search: params[:search]
     else
-      render json: @folder.notes.search_ambiguous_text(params[:search]).order(create_sort_by).page(params[:page])
+      render json: @folder.notes.includes(:task).search_ambiguous_text(params[:search]).order(create_sort_by).page(params[:page])
     end
   end
 
@@ -23,12 +24,12 @@ class V1::NotesController < V1::ApplicationController
   def all
     if params.key?(:search) && params[:search]
       @notes = @project.notes.search_ambiguous_text(params[:search])
-      render json: @notes.order(created_at: :desc).page(params[:page])
+      render json: @notes.includes(:task).order(created_at: :desc).page(params[:page])
 
       return
     end
 
-    render json: @project.notes.page(params[:page]).order(created_at: :desc)
+    render json: @project.notes.includes(:task).page(params[:page]).order(created_at: :desc)
   end
 
   # GET /notes/1
