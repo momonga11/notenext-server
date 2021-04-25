@@ -14,10 +14,8 @@ class Folder < ApplicationRecord
     left_joins(:tasks_not_completed).group('folders.id').select('folders.*, COUNT(`tasks`.`id`) AS tasks_count').order(:id)
   end
 
-  # 完了していないタスクの件数を合わせてJSONにして返す
+  # 単一のフォルダから完了していないタスクの件数を合わせてJSONにして返す
   def with_tasks_count
     attributes.merge('tasks_count' => tasks.where(completed: false).count)
   end
-
-  @tasks_count
 end

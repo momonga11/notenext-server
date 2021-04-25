@@ -9,13 +9,12 @@ class V1::FoldersController < V1::ApplicationController
 
   # GET /folders
   def index
-    # 特定のパラメータが指定されている場合、ノートが紐づくフォルダのみ取得する（ノート検索用のパラメータも受け取れるようにする）
     unless params.key?(:note) && ActiveRecord::Type::Boolean.new.cast(params[:note])
       render json: @project.folders.select_tasks_count, each_serializer: FolderWithTaskCountSerializer
       return
     end
 
-    # 以下、ノートが紐づくフォルダのみ取得する
+    # 特定のパラメータが指定されている場合、ノートが紐づくフォルダのみ取得する（ノート検索用のパラメータも受け取れるようにする）
     @folders = if params.key?(:search) && params[:search]
                  @project.folders.select_tasks_count
                          .where.not(notes: { id: nil })

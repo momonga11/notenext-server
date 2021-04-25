@@ -245,6 +245,18 @@ RSpec.describe 'Notes', type: :request do
                   expect(note_ids).to include note2.id
                   expect(note_ids).not_to include note.id, note3.id
                 end
+
+                context 'when task is exists' do
+                  let!(:task) { FactoryBot.create(:task, note: note2) }
+
+                  it 'タスク情報が取得できる' do
+                    expect(get_notes_with_association_and_search).to have_http_status(:ok)
+                    response_task = json_parse_body(response)[:notes][0][:task]
+                    expect(response_task[:id]).to eq task.id
+                    expect(Date.parse(response_task[:date_to])).to eq task.date_to
+                    expect(response_task[:completed]).to eq task.completed
+                  end
+                end
               end
             end
 
@@ -462,6 +474,18 @@ RSpec.describe 'Notes', type: :request do
                   note_ids = json_parse_body(response).map { |note| note[:id] }
                   expect(note_ids).to include note2.id
                   expect(note_ids).not_to include note.id, note3.id
+                end
+
+                context 'when task is exists' do
+                  let!(:task) { FactoryBot.create(:task, note: note2) }
+
+                  it 'タスク情報が取得できる' do
+                    expect(get_notes_with_association_and_search).to have_http_status(:ok)
+                    response_task = json_parse_body(response)[0][:task]
+                    expect(response_task[:id]).to eq task.id
+                    expect(Date.parse(response_task[:date_to])).to eq task.date_to
+                    expect(response_task[:completed]).to eq task.completed
+                  end
                 end
               end
             end
@@ -743,14 +767,29 @@ RSpec.describe 'Notes', type: :request do
 
     context 'when 認証されている' do
       context 'when ユーザーが所属しているプロジェクト' do
-        it 'フォルダを跨いでノートが取得できる(複数)' do
+        subject :get_notes do
           get v1_project_notes_path(
             project_id: note.project_id
           ), headers: auth_headers
+          response
+        end
 
-          expect(response).to have_http_status(:ok)
+        it 'フォルダを跨いでノートが取得できる(複数)' do
+          expect(get_notes).to have_http_status(:ok)
           expect(json_parse_body(response).map { |note| note[:id] }).to eq(folder.notes.ids + folder2.notes.ids)
           expect(json_parse_body(response).map { |note| note[:id] }.length).to eq 2
+        end
+
+        context 'when task is exists' do
+          let!(:task) { FactoryBot.create(:task, note: note2) }
+
+          it 'タスク情報が取得できる' do
+            expect(get_notes).to have_http_status(:ok)
+            response_task = json_parse_body(response).select { |note| note[:id] == note2.id }[0][:task]
+            expect(response_task[:id]).to eq task.id
+            expect(Date.parse(response_task[:date_to])).to eq task.date_to
+            expect(response_task[:completed]).to eq task.completed
+          end
         end
 
         context 'with pagination' do
@@ -851,6 +890,18 @@ RSpec.describe 'Notes', type: :request do
               expect(note_ids).to include folder2.notes[0].id
               expect(note_ids).not_to include folder.notes[0].id, folder3.notes[0].id
             end
+
+            context 'when task is exists' do
+              let!(:task) { FactoryBot.create(:task, note: note2) }
+
+              it 'タスク情報が取得できる' do
+                expect(get_notes_all_page_and_search).to have_http_status(:ok)
+                response_task = json_parse_body(response).select { |note| note[:id] == note2.id }[0][:task]
+                expect(response_task[:id]).to eq task.id
+                expect(Date.parse(response_task[:date_to])).to eq task.date_to
+                expect(response_task[:completed]).to eq task.completed
+              end
+            end
           end
         end
       end
@@ -880,13 +931,30 @@ RSpec.describe 'Notes', type: :request do
       end
 
       context 'when 認証されている' do
-        it 'ユーザーが所属しているプロジェクトの場合はノートが取得できる' do
+        subject :get_note do
           get v1_project_folder_note_path(
             project_id: user.projects[0].id,
             folder_id: note.folder.id,
             id: note.id
           ), headers: auth_headers
-          expect(json_parse_body(response)[:id]).to eq note.id
+          response
+        end
+
+        it 'ユーザーが所属しているプロジェクトの場合はノートが取得できる' do
+          expect(json_parse_body(get_note)[:id]).to eq note.id
+        end
+
+        context 'when task is exists' do
+          let!(:task) { FactoryBot.create(:task, note: note) }
+
+          it 'タスク情報が取得できる' do
+            expect(get_note).to have_http_status(:ok)
+            response_task = json_parse_body(response)[:task]
+            expect(response_task[:id]).to eq task.id
+            expect(Date.parse(response_task[:date_to])).to eq task.date_to
+            expect(response_task[:completed]).to eq task.completed
+            expect(response_task[:lock_version]).to eq task.lock_version
+          end
         end
 
         it 'ユーザーが所属していないプロジェクトの場合、ノートは取得できない' do

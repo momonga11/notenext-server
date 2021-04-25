@@ -53,7 +53,8 @@ class V1::TasksController < V1::ApplicationController
     # noteに値がない場合にはURLパラメータを返す
     return param_url_pass if params.key?(:task) && !params[:task].present?
 
-    params.require(:task).permit(:date_to, :completed, :lock_version)
+    param_body = params.require(:task).permit(:project_id, :note_id, :date_to, :completed, :lock_version)
+    param_url_pass.merge(param_body)
   end
 
   def set_note

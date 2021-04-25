@@ -34,15 +34,33 @@ RSpec.describe 'Projects', type: :request do
     context 'when 認証されている' do
       context 'when クエリパラメーターにwith_associationが存在する' do
         context 'when with_association=True' do
-          it 'ユーザーが所属しているヘッダー用プロジェクトのデータは取得できる' do
+          subject :get_projects_with_association do
             get v1_project_path(user.projects.ids[0]), params: { with_association: true }, headers: auth_headers
-            response_json = json_parse_body(response)
+            response
+          end
+
+          it 'ユーザーが所属しているヘッダー用プロジェクトのデータは取得できる' do
+            response_json = json_parse_body(get_projects_with_association)
             expect(response_json[:id]).to eq user.projects.ids[0]
             # response.bodyの検証
             expect(response_json).to be_key(:name)
             expect(response_json).to be_key(:user)
             expect(response_json[:user]).to be_key(:avatar)
             expect(response_json).to be_key(:folders)
+          end
+
+          context 'when task is exists' do
+            let(:folder) { FactoryBot.create(:folder, project: user.projects[0]) }
+            let(:note) { FactoryBot.create(:note, folder: folder) }
+
+            before do
+              FactoryBot.create(:task, note: note)
+            end
+
+            it 'タスクの件数が取得できる' do
+              expect(get_projects_with_association).to have_http_status(:ok)
+              expect(json_parse_body(response)[:folders][0][:tasks_count]).to eq 1
+            end
           end
 
           it 'ユーザーが所属していないヘッダー用プロジェクトのデータは取得できない' do

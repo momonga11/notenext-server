@@ -6,6 +6,7 @@ RSpec.describe Note, type: :model do
   it { is_expected.to validate_length_of(:title).is_at_most(255) }
   it { is_expected.to belong_to(:project) }
   it { is_expected.to belong_to(:folder) }
+  it { is_expected.to have_one(:task).dependent(:destroy) }
 
   describe 'ノートを作成する' do
     let(:note) { FactoryBot.build(:note) }
@@ -149,15 +150,26 @@ RSpec.describe Note, type: :model do
     let!(:note) { FactoryBot.create(:note) }
     let!(:note2) { FactoryBot.create(:note2) }
     let!(:note3) { FactoryBot.create(:note3) }
+    let!(:note_empty_title_text) { FactoryBot.create(:note_empty_title_text) }
 
     it 'titleを部分一致検索できること' do
-      expect(described_class.search_ambiguous_text('NoteT')[0].id).to be note3.id
+      expect(described_class.all.search_ambiguous_text('NoteT')[0].id).to be note3.id
     end
 
     it 'textを部分一致検索できること' do
-      notes = described_class.search_ambiguous_text('田舎')
+      notes = described_class.all.search_ambiguous_text('田舎')
       expect(notes).to include note2, note3
       expect(notes).not_to include note
+    end
+
+    it '検索対象が空文字の場合に、titleとtextがNullのレコードが取得できること' do
+      notes = described_class.all.search_ambiguous_text('')
+      expect(notes).to include note_empty_title_text
+    end
+
+    it '検索対象がNullの場合に、titleとtextがNullのレコードが取得できること' do
+      notes = described_class.all.search_ambiguous_text(nil)
+      expect(notes).to include note_empty_title_text
     end
   end
 end
