@@ -121,6 +121,78 @@ RSpec.describe 'Notes', type: :request do
                 end
               end
 
+              context 'when task sort' do
+                # 以下のノートを作成する
+                # 1_1:task is null
+                # 1_2:task is null (note.id greater then 1-1)
+                # 2:task.completed = true
+                # 3:task.completed = false and task.date_to is not null
+                # 4:task.completed = false and task.date_to is not null and date_to greater then 3
+                # 5_1:task.completed = false and task.date_to is null
+                # 5_2:task.completed = false and task.date_to is null(task.id greater then 5-1)
+
+                # 1-1
+                let!(:note1_1) { FactoryBot.create(:note, project: user.projects[0], folder: folder) }
+                # 1-2
+                let!(:note1_2) { FactoryBot.create(:note, project: user.projects[0], folder: folder) }
+                # 2
+                let(:note2) { FactoryBot.create(:note, project: user.projects[0], folder: folder) }
+                # 3
+                let(:note3) { FactoryBot.create(:note, project: user.projects[0], folder: folder) }
+                # 4
+                let(:note4) { FactoryBot.create(:note, project: user.projects[0], folder: folder) }
+                # 5-1
+                let(:note5_1) { FactoryBot.create(:note, project: user.projects[0], folder: folder) }
+                # 5-2
+                let(:note5_2) { FactoryBot.create(:note, project: user.projects[0], folder: folder) }
+
+                before do
+                  FactoryBot.create(:task_completed, note: note2)
+                  FactoryBot.create(:task, note: note3)
+                  FactoryBot.create(:task_date_to_greater_than, note: note4)
+                  FactoryBot.create(:task_date_to_null, note: note5_1)
+                  FactoryBot.create(:task_date_to_null, note: note5_2)
+                end
+
+                context 'when date_to:asc' do
+                  let(:sort) { 'date_to:asc' }
+
+                  it 'タスクのdate_toの昇順に並んだNoteが取得できる' do
+                    # task is not null < task.completed = false < task.date_to is not null のタスクから
+                    # task.date_toの昇順に並ぶこと
+                    expect(get_notes_with_association_and_sort).to have_http_status(:ok)
+                    ids = json_parse_body(response)[:notes].map { |note| note[:id] }
+
+                    # 以下の順番に並ぶことを確認する
+                    expect_ids = [note3.id, note4.id, note5_1.id, note5_2.id, note2.id, note1_1.id, note1_2.id]
+                    i = 0
+                    expect_ids.each do |id|
+                      expect(ids[i]).to eq(id)
+                      i += 1
+                    end
+                  end
+                end
+
+                context 'when date_to:desc' do
+                  let(:sort) { 'date_to:desc' }
+
+                  it 'タスクのdate_toの昇順に並んだNoteが取得できる' do
+                    # task is not null < task.completed = false < task.date_to is not null のタスクから
+                    # task.date_toの降順に並ぶこと
+                    expect(get_notes_with_association_and_sort).to have_http_status(:ok)
+                    ids = json_parse_body(response)[:notes].map { |note| note[:id] }
+
+                    # 以下の順番に並ぶことを確認する
+                    expect_ids = [note4.id, note3.id, note5_1.id, note5_2.id, note2.id, note1_1.id, note1_2.id]
+                    i = 0
+                    expect_ids.each do |id|
+                      expect(ids[i]).to eq(id)
+                      i += 1
+                    end
+                  end
+                end
+              end
+
               describe 'default sort' do
                 shared_examples 'dafault sort id:asc' do
                   it do
@@ -244,6 +316,18 @@ RSpec.describe 'Notes', type: :request do
                   note_ids = json_parse_body(response)[:notes].map { |note| note[:id] }
                   expect(note_ids).to include note2.id
                   expect(note_ids).not_to include note.id, note3.id
+                end
+
+                context 'when task is exists' do
+                  let!(:task) { FactoryBot.create(:task, note: note2) }
+
+                  it 'タスク情報が取得できる' do
+                    expect(get_notes_with_association_and_search).to have_http_status(:ok)
+                    response_task = json_parse_body(response)[:notes][0][:task]
+                    expect(response_task[:id]).to eq task.id
+                    expect(Date.parse(response_task[:date_to])).to eq task.date_to
+                    expect(response_task[:completed]).to eq task.completed
+                  end
                 end
               end
             end
@@ -462,6 +546,18 @@ RSpec.describe 'Notes', type: :request do
                   note_ids = json_parse_body(response).map { |note| note[:id] }
                   expect(note_ids).to include note2.id
                   expect(note_ids).not_to include note.id, note3.id
+                end
+
+                context 'when task is exists' do
+                  let!(:task) { FactoryBot.create(:task, note: note2) }
+
+                  it 'タスク情報が取得できる' do
+                    expect(get_notes_with_association_and_search).to have_http_status(:ok)
+                    response_task = json_parse_body(response)[0][:task]
+                    expect(response_task[:id]).to eq task.id
+                    expect(Date.parse(response_task[:date_to])).to eq task.date_to
+                    expect(response_task[:completed]).to eq task.completed
+                  end
                 end
               end
             end
@@ -743,14 +839,29 @@ RSpec.describe 'Notes', type: :request do
 
     context 'when 認証されている' do
       context 'when ユーザーが所属しているプロジェクト' do
-        it 'フォルダを跨いでノートが取得できる(複数)' do
+        subject :get_notes do
           get v1_project_notes_path(
             project_id: note.project_id
           ), headers: auth_headers
+          response
+        end
 
-          expect(response).to have_http_status(:ok)
+        it 'フォルダを跨いでノートが取得できる(複数)' do
+          expect(get_notes).to have_http_status(:ok)
           expect(json_parse_body(response).map { |note| note[:id] }).to eq(folder.notes.ids + folder2.notes.ids)
           expect(json_parse_body(response).map { |note| note[:id] }.length).to eq 2
+        end
+
+        context 'when task is exists' do
+          let!(:task) { FactoryBot.create(:task, note: note2) }
+
+          it 'タスク情報が取得できる' do
+            expect(get_notes).to have_http_status(:ok)
+            response_task = json_parse_body(response).select { |note| note[:id] == note2.id }[0][:task]
+            expect(response_task[:id]).to eq task.id
+            expect(Date.parse(response_task[:date_to])).to eq task.date_to
+            expect(response_task[:completed]).to eq task.completed
+          end
         end
 
         context 'with pagination' do
@@ -851,6 +962,18 @@ RSpec.describe 'Notes', type: :request do
               expect(note_ids).to include folder2.notes[0].id
               expect(note_ids).not_to include folder.notes[0].id, folder3.notes[0].id
             end
+
+            context 'when task is exists' do
+              let!(:task) { FactoryBot.create(:task, note: note2) }
+
+              it 'タスク情報が取得できる' do
+                expect(get_notes_all_page_and_search).to have_http_status(:ok)
+                response_task = json_parse_body(response).select { |note| note[:id] == note2.id }[0][:task]
+                expect(response_task[:id]).to eq task.id
+                expect(Date.parse(response_task[:date_to])).to eq task.date_to
+                expect(response_task[:completed]).to eq task.completed
+              end
+            end
           end
         end
       end
@@ -880,13 +1003,30 @@ RSpec.describe 'Notes', type: :request do
       end
 
       context 'when 認証されている' do
-        it 'ユーザーが所属しているプロジェクトの場合はノートが取得できる' do
+        subject :get_note do
           get v1_project_folder_note_path(
             project_id: user.projects[0].id,
             folder_id: note.folder.id,
             id: note.id
           ), headers: auth_headers
-          expect(json_parse_body(response)[:id]).to eq note.id
+          response
+        end
+
+        it 'ユーザーが所属しているプロジェクトの場合はノートが取得できる' do
+          expect(json_parse_body(get_note)[:id]).to eq note.id
+        end
+
+        context 'when task is exists' do
+          let!(:task) { FactoryBot.create(:task, note: note) }
+
+          it 'タスク情報が取得できる' do
+            expect(get_note).to have_http_status(:ok)
+            response_task = json_parse_body(response)[:task]
+            expect(response_task[:id]).to eq task.id
+            expect(Date.parse(response_task[:date_to])).to eq task.date_to
+            expect(response_task[:completed]).to eq task.completed
+            expect(response_task[:lock_version]).to eq task.lock_version
+          end
         end
 
         it 'ユーザーが所属していないプロジェクトの場合、ノートは取得できない' do

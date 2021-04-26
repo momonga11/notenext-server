@@ -3,4 +3,5 @@
 # ノートのヘッダー情報をシリアライズするクラス
 class NoteHeaderSerializer < ActiveModel::Serializer
   attributes :id, :folder_id, :title, :text, :lock_version, :created_at, :updated_at
+  has_one :task, serializer: TaskHeaderSerializer
 end

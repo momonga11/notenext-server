@@ -21,10 +21,30 @@ RSpec.describe 'Folders', type: :request do
     context 'when 認証されている' do
       let!(:folder2) { FactoryBot.create(:folder, project: user.projects[0]) }
 
-      it 'ユーザーが所属しているプロジェクトの場合、フォルダが取得できる(複数)' do
-        get v1_project_folders_path(project_id: folder.project.id), headers: auth_headers
-        expect(json_parse_body(response).map { |folder| folder[:id] }).to eq user.projects[0].folders.ids
-        expect(json_parse_body(response).map { |folder| folder[:id] }.length).to eq 2
+      context 'when プロジェクトにユーザーが所属している' do
+        subject :get_folders do
+          get v1_project_folders_path(project_id: folder.project.id), headers: auth_headers
+          response
+        end
+
+        it 'フォルダが取得できる(複数)' do
+          expect(get_folders).to have_http_status(:ok)
+          expect(json_parse_body(response).map { |folder| folder[:id] }).to eq user.projects[0].folders.ids
+          expect(json_parse_body(response).map { |folder| folder[:id] }.length).to eq 2
+        end
+
+        context 'when task is exists' do
+          before do
+            FactoryBot.create(:task, note: FactoryBot.create(:note, folder: folder))
+            FactoryBot.create(:task, note: FactoryBot.create(:note, folder: folder))
+            FactoryBot.create(:task, note: FactoryBot.create(:note, folder: folder2))
+          end
+
+          it 'タスクの件数が取得できる' do
+            expect(get_folders).to have_http_status(:ok)
+            expect(json_parse_body(response).map { |folder| folder[:tasks_count] }).to include 1, 2
+          end
+        end
       end
 
       it 'ユーザーが所属していないプロジェクトの場合、フォルダは所得できない' do
@@ -33,27 +53,57 @@ RSpec.describe 'Folders', type: :request do
       end
 
       context 'when params note' do
+        subject :get_folders_with_note do
+          get v1_project_folders_path(project_id: folder.project.id), params: { note: true }, headers: auth_headers
+          response
+        end
+
         let!(:folder2) { FactoryBot.create(:folder2, project: user.projects[0]) }
         let!(:note) { FactoryBot.create(:note, project: user.projects[0], folder: folder2) }
 
         it 'ノートが紐づくフォルダのみ取得できる' do
-          get v1_project_folders_path(project_id: folder.project.id), params: { note: true }, headers: auth_headers
-          folders = json_parse_body(response).map { |folder| folder[:id] }
+          folders = json_parse_body(get_folders_with_note).map { |folder| folder[:id] }
           expect(folders).to include folder2.id
           expect(folders).not_to include folder.id
         end
 
+        context 'when task is exists' do
+          before do
+            FactoryBot.create(:task, note: note)
+          end
+
+          it 'タスクの件数が取得できる' do
+            expect(get_folders_with_note).to have_http_status(:ok)
+            expect(json_parse_body(response).map { |folder| folder[:tasks_count] }[0]).to eq 1
+          end
+        end
+
         context 'when params note and search' do
+          subject :get_folders_with_note_search do
+            get v1_project_folders_path(project_id: folder.project.id), params: { note: true, search: search },
+                                                                        headers: auth_headers
+            response
+          end
+
           let!(:folder3) { FactoryBot.create(:folder2, project: user.projects[0]) }
           let!(:note2) { FactoryBot.create(:note2, project: user.projects[0], folder: folder3) }
           let(:search) { '田舎' }
 
           it 'params:search の条件に該当するノートが紐づくフォルダのみ取得できる' do
-            get v1_project_folders_path(project_id: folder.project.id), params: { note: true, search: search },
-                                                                        headers: auth_headers
-            folders = json_parse_body(response).map { |folder| folder[:id] }
+            folders = json_parse_body(get_folders_with_note_search).map { |folder| folder[:id] }
             expect(folders).to include folder3.id
             expect(folders).not_to include folder.id, folder2.id
+          end
+
+          context 'when task is exists' do
+            before do
+              FactoryBot.create(:task, note: note2)
+            end
+
+            it 'タスクの件数が取得できる' do
+              expect(get_folders_with_note_search).to have_http_status(:ok)
+              expect(json_parse_body(response).map { |folder| folder[:tasks_count] }[0]).to eq 1
+            end
           end
         end
       end
@@ -68,9 +118,26 @@ RSpec.describe 'Folders', type: :request do
     end
 
     context 'when 認証されている' do
-      it 'ユーザーが所属しているプロジェクトのデータは取得できない' do
-        get v1_project_folder_path(project_id: folder.project.id, id: folder.id), headers: auth_headers
-        expect(json_parse_body(response)[:id]).to eq folder.id
+      context 'when プロジェクトにユーザーが所属している' do
+        subject :get_folder do
+          get v1_project_folder_path(project_id: folder.project.id, id: folder.id), headers: auth_headers
+          response
+        end
+
+        it 'ユーザーが所属しているプロジェクトのデータは取得できる' do
+          expect(json_parse_body(get_folder)[:id]).to eq folder.id
+        end
+
+        context 'when task is exists' do
+          before do
+            FactoryBot.create(:task, note: FactoryBot.create(:note, folder: folder))
+          end
+
+          it 'タスクの件数が取得できる' do
+            expect(get_folder).to have_http_status(:ok)
+            expect(json_parse_body(response)[:tasks_count]).to eq 1
+          end
+        end
       end
 
       it 'ユーザーが所属していないプロジェクトのデータは取得できない' do
