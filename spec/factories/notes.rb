@@ -26,4 +26,13 @@ FactoryBot.define do
     association :project
     association :folder
   end
+
+  factory :note_empty_title_text, class: 'Note' do
+    title { nil }
+    text { nil }
+    htmltext { nil }
+    lock_version { 0 }
+    association :project
+    association :folder
+  end
 end

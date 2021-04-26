@@ -6,6 +6,7 @@ class Note < ApplicationRecord
   validates :lock_version, presence: true, on: :update
   belongs_to :project
   belongs_to :folder
+  has_one :task, dependent: :destroy
   has_many_base64_attached :images
   validate :image_size, on: %i[update create], if: :images_attached?
   validate :image_type, on: %i[update create], if: :images_attached?
@@ -13,6 +14,8 @@ class Note < ApplicationRecord
 
   # テキストカラムの曖昧検索を実行する
   def self.search_ambiguous_text(text)
+    return current_scope if !text || text.empty?
+
     where('title like ?', "%#{text}%").or(Note.where('text like ?', "%#{text}%"))
   end
 

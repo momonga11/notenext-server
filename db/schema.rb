@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_03_07_103326) do
+ActiveRecord::Schema.define(version: 2021_04_22_184544) do
 
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
@@ -71,6 +71,18 @@ ActiveRecord::Schema.define(version: 2021_03_07_103326) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  create_table "tasks", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.bigint "note_id", null: false
+    t.date "date_to"
+    t.boolean "completed", default: false, null: false
+    t.integer "lock_version", default: 0
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["note_id"], name: "index_tasks_on_note_id"
+    t.index ["project_id"], name: "index_tasks_on_project_id"
+  end
+
   create_table "user_samples", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.boolean "payout"
@@ -119,6 +131,8 @@ ActiveRecord::Schema.define(version: 2021_03_07_103326) do
   add_foreign_key "folders", "projects"
   add_foreign_key "notes", "folders"
   add_foreign_key "notes", "projects"
+  add_foreign_key "tasks", "notes"
+  add_foreign_key "tasks", "projects"
   add_foreign_key "user_samples", "users"
   add_foreign_key "users_projects", "projects"
   add_foreign_key "users_projects", "users"
