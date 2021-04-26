@@ -74,7 +74,7 @@ RSpec.describe 'Tasks', type: :request do
 
   describe 'PUT #update' do
     subject :update_task do
-      put v1_project_note_task_path(project_id: project_id, note_id: note_id, id: task_id), params: task2_attributes,
+      put v1_project_note_task_path(project_id: project_id, note_id: note_id, id: task_id), params: task_completed_attributes,
                                                                                             headers: auth_headers
       response
     end
@@ -82,7 +82,7 @@ RSpec.describe 'Tasks', type: :request do
     let(:project_id) { user.projects[0].id }
     let(:note_id) { note.id }
     let(:task_id) { task.id }
-    let(:task2_attributes) { { task: FactoryBot.attributes_for(:task2) } }
+    let(:task_completed_attributes) { { task: FactoryBot.attributes_for(:task_completed) } }
 
     context 'when 認証されていない' do
       it '更新できない' do
@@ -96,7 +96,7 @@ RSpec.describe 'Tasks', type: :request do
       context 'when プロジェクトにユーザーが所属している' do
         it '更新できる' do
           expect(update_task).to have_http_status(:ok)
-          expect(json_parse_body(response)[:date_to]).to eq(task2_attributes[:task][:date_to])
+          expect(json_parse_body(response)[:date_to]).to eq(task_completed_attributes[:task][:date_to])
         end
       end
 
@@ -105,13 +105,13 @@ RSpec.describe 'Tasks', type: :request do
 
         it '更新できない' do
           expect(update_task).to have_http_status(:forbidden)
-          expect(json_parse_body(response)[:date_to]).not_to eq(task2_attributes[:task][:date_to])
+          expect(json_parse_body(response)[:date_to]).not_to eq(task_completed_attributes[:task][:date_to])
         end
       end
 
       context 'when パラメーターが異常値' do
         context 'when パラメーターの値が想定外' do
-          let(:task2_attributes) { { test: 'test' } }
+          let(:task_completed_attributes) { { test: 'test' } }
 
           it '更新できない' do
             expect(update_task).to have_http_status(:bad_request)
@@ -120,14 +120,14 @@ RSpec.describe 'Tasks', type: :request do
 
         context 'when パラメーターにlock_versionが存在しない場合' do
           it '更新できない' do
-            task2_attributes[:task].reject! { |k| k == :lock_version }
+            task_completed_attributes[:task].reject! { |k| k == :lock_version }
             expect(update_task).to have_http_status(:bad_request)
           end
         end
 
         context 'when DBのlock_versionと更新対象のlock_versionが異なる' do
           it '更新できない' do
-            task2_attributes[:task][:lock_version] = -1
+            task_completed_attributes[:task][:lock_version] = -1
             expect(update_task).to have_http_status(:conflict)
           end
         end
