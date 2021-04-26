@@ -124,10 +124,18 @@ class V1::NotesController < V1::ApplicationController
     sort_column, sort_order = params[:sort].split(':')
 
     # SQLインジェクション対策
-    return unless Note.column_names.include?(sort_column)
+    return unless Note.column_names.include?(sort_column) || Task.column_names.include?(sort_column)
 
     # 並び順が指定なし、あるは誤っている場合は、デフォルトとして昇順を設定する
     sort_order = 'asc' if !sort_order || (sort_order != 'asc' && sort_order != 'desc')
+
+    if Task.column_names.include?(sort_column)
+      sort_column = "tasks.#{sort_column}"
+      # タスクが紐づく、かつ、タスクが未完了、かつソート対象のカラムがNULLではないものから、並び替えを実行する
+      return Arel.sql(
+        "tasks.id IS NULL, tasks.completed, #{sort_column} IS NULL, #{sort_column} #{sort_order} ,tasks.id ASC, notes.id"
+      )
+    end
 
     "#{sort_column} #{sort_order}"
   end

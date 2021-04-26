@@ -82,8 +82,16 @@ RSpec/InstanceVariable:
 
 # RSpecのヘルパーの上限を緩める
 RSpec/MultipleMemoizedHelpers:
-  Max: 15
+  Max: 18
 
 # Exampleの長さの上限を緩める
 RSpec/ExampleLength:
   Max: 10
+
+# 循環的複雑度は少し緩める
+Metrics/CyclomaticComplexity:
+  Max: 8
+
+# シンボルは変数の数字の形式チェックの対象外とする
+Naming/VariableNumber:
+  CheckSymbols: false
