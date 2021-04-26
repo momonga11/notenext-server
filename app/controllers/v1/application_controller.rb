@@ -7,9 +7,7 @@ class V1::ApplicationController < ActionController::API
 
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :authenticate_user!, unless: :devise_controller?
-  # skip_before_action :verify_authenticity_token, if: :devise_controller? # APIではCSRFチェックをしない
 
-  # rescue_from StandardError, with: :render_standard_error
   rescue_from ActionController::ParameterMissing, with: :render_parameter_missing
   rescue_from ActionController::RoutingError, with: :render_routing_error
   rescue_from ActiveRecord::StaleObjectError, with: :render_stale_object_error
@@ -34,10 +32,6 @@ class V1::ApplicationController < ActionController::API
     @project = current_user.projects.find_by(id: project_id)
     @project || response_forbidden
   end
-
-  # def render_standard_error(e)
-  #   response_internal_server_error(e)
-  # end
 
   def render_routing_error(_error)
     response_bad_request(I18n.t('response_errors.messages.not_routing'))
