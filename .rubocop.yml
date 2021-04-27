@@ -8,6 +8,7 @@ AllCops:
     - "db/schema.rb"
     - "db/migrate/*"
     - "bin/*"
+    - "app/controllers/concerns/sample_data.rb" # サンプルデータを定義したファイルのため例外とする。
   NewCops: enable
 
 Style/StringLiterals:
