@@ -509,21 +509,9 @@ RSpec.describe 'Users', type: :request do
       it 'success signin' do
         expect do
           post v1_auth_sign_in_sample_path
-        end.to change(UserSample.where(payout: false), :count).by(-1)
+        end.to change(UserSample.all, :count).by(1)
+                                             .and change(User.all, :count).by(1)
         expect(response).to have_http_status(:ok)
-      end
-    end
-
-    context 'when not exist sample user' do
-      before do
-        post v1_auth_sign_in_sample_path
-      end
-
-      it 'failure signin' do
-        expect do
-          post v1_auth_sign_in_sample_path
-        end.to change(UserSample.where(payout: false), :count).by(0)
-        expect(response).to have_http_status(:not_found)
       end
     end
   end
