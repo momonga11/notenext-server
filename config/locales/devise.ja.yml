@@ -70,7 +70,7 @@ ja:
         action: アカウントのロック解除
         greeting: "%{recipient}様"
         instruction: アカウントのロックを解除するには下のリンクをクリックしてください。
-        message: ログイン失敗が繰り返されたため、アカウントはロックされています。
+        message: ログイン失敗が繰り返されたため、アカウントはロックされています（1時間後、再度ログインできるようになります）
         subject: アカウントのロック解除について
     omniauth_callbacks:
       failure: "%{kind} アカウントによる認証に失敗しました。理由：（%{reason}）"

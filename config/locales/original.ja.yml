@@ -8,3 +8,6 @@ ja:
       not_routing: 指定されたURLは存在しません
       parameter_missing: "必要なパラメーターが存在しない、または空のため、処理を実行できません(%{attribute})"
       internal_server: "Internal Server Error(申し訳ございません。現在、アプリケーションは利用できません)"
+  layouts:
+    mailer:
+      no_reply_announce: "※本メールは送信専用のメールアドレスで送信しております。ご返信いただいても回答は致しかねますので、あらかじめご了承ください。"
