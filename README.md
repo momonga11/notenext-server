@@ -5,7 +5,7 @@
 
 ## ER図
 
-<img src="https://github.com/momonga11/notenext-docs/blob/f32c332552ec8ae2847df09cfa94dbf9ddfc4e76/API%E8%A8%AD%E8%A8%88/DB/ER.png" alt="er_diagram">
+<img src="https://github.com/momonga11/notenext-docs/blob/f32c332552ec8ae2847df09cfa94dbf9ddfc4e76/API%E8%A8%AD%E8%A8%88/DB/ER.png" alt="er_diagram" width="700px">
 
 ## プロジェクトセットアップ手順
 
